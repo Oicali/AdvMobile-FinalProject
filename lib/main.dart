@@ -20,7 +20,9 @@ import 'screens/reportissue.dart';
 import 'screens/disputedetails.dart';
 import 'screens/myreports.dart';
 import 'screens/home.dart';
-
+import 'screens/demomenu.dart';
+import 'screens/confirmreturn.dart';
+import 'screens/splash.dart';
 
 // App entry point
 void main() {
@@ -35,8 +37,8 @@ class MyFirstApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // First screen shown on launch (swap for initialRoute: "/splash" later)
-      home: LoginState(),
+      // First screen shown on launch
+      initialRoute: "/splash",
 
       // Named routes used by Navigator.pushNamed
       routes: {
@@ -61,11 +63,13 @@ class MyFirstApp extends StatelessWidget {
         "/disputedetails": (context) => DisputeDetailsState(),
         "/myreports": (context) => MyReportsState(),
         "/home": (context) => HomeState(),
-
+        "/demomenu": (context) => DemoMenuState(),
+        "/confirmreturn": (context) => ConfirmReturnState(),
+        "/splash": (context) => SplashState(),
       },
 
       // App name + teal theme + Plus Jakarta Sans font app-wide
-      title: "Rentahan",
+      title: "Pahiram",
       theme: ThemeData(
         fontFamily: 'PlusJakartaSans',
         colorSchemeSeed: const Color(0xFF0F5C5C),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class RegisterState extends StatefulWidget {
@@ -79,22 +80,25 @@ class RegisterPage extends State<RegisterState> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-      body: SafeArea(
-        // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
-        child: LayoutBuilder(
+      body: Column(
+        children: [
+          // Pinned shared top bar (back arrow, logo, big title)
+          const TopBar(title: 'Create account'),
+          Expanded(
+            child: SafeArea(
+              top: false,
+              // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
+              child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Screen title
-                      const Text('Create account',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      const SizedBox(height: 20),
+
 
                       // Form fields
                       InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
@@ -153,6 +157,9 @@ class RegisterPage extends State<RegisterState> {
             ),
           ),
         ),
+      ),
+          ),
+        ],
       ),
     );
   }

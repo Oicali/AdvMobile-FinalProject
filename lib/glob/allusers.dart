@@ -7,7 +7,7 @@ class AllUsers {
     {'fullname': 'Admin', 'username': 'admin', 'password': 'admin', 'email': 'admin@rentahan.app', 'phone': '', 'joined': '2026-01-01', 'verified': true},
   ];
 
-  // Find one user by username (null if missing)
+
   static Map<String, dynamic>? byUsername(String? username) {
     for (final u in users) {
       if (u['username'] == username) return u;

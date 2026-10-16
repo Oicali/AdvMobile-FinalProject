@@ -5,6 +5,7 @@ import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 
 // Widget class (XState naming convention); serves own AND public profile
@@ -92,26 +93,17 @@ class ProfilePage extends State<ProfileState> {
       // Tab bar only on my own profile; public view has a back arrow instead
       bottomNavigationBar: isOwn ? const SafeArea(child: BottomNav(current: 3)) : null,
       body: SafeArea(
+        top: false, // TopBar handles the status bar itself
         child: Column(
           children: [
+            // Shared top bar: back arrow only on someone else's profile
+            TopBar(title: 'Profile', showBack: !isOwn),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title (with back arrow on someone else's profile)
-                    Row(
-                      children: [
-                        if (!isOwn)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.arrow_back, color: ink)),
-                          ),
-                        const Text('Profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
 
                     // Identity card: avatar placeholder, name, member since, verified tag
                     Container(

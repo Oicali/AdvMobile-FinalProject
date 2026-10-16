@@ -6,6 +6,7 @@ import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class RentalDetailsState extends StatefulWidget {
@@ -211,22 +212,19 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
+        top: false, // TopBar handles the status bar itself
         child: Column(
           children: [
+            // Shared top bar (back arrow, logo, title)
+            const TopBar(title: 'Rental details'),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Back arrow + item name
-                    Row(
-                      children: [
-                        GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.arrow_back, color: ink)),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(item?['name'] ?? 'Rental', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5))),
-                      ],
-                    ),
+                    // Item name as the heading (the arrow now lives in the TopBar)
+                    Text(item?['name'] ?? 'Rental', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4)),
                     const SizedBox(height: 10),
 
                     // Status tag + the demo date everything is measured against
@@ -239,7 +237,30 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Timeline card
+                  
+                    if (s == 'Overdue') ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: const Color(0xFFFFE9D6), borderRadius: BorderRadius.circular(20)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${RentalFees.daysLate(r)} ${RentalFees.daysLate(r) == 1 ? 'day' : 'days'} late',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF7A3A0B))),
+                            const SizedBox(height: 6),
+                            Text('Late fee: ${AppSettings.peso(RentalFees.lateFee(r))}',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF7A3A0B))),
+                            const SizedBox(height: 2),
+                            Text('Deposit refund if returned today: ${AppSettings.peso(RentalFees.depositRefund(r))}',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF7A3A0B))),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                   
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                       decoration: cardStyle(20),

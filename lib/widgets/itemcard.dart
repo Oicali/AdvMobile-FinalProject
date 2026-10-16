@@ -1,26 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 
-// White rounded item card used in grids (Browse, Saved Items)
 class ItemCard extends StatelessWidget {
   final Map<String, dynamic> item;
   final VoidCallback onTap;
   const ItemCard({super.key, required this.item, required this.onTap});
 
-  // Placeholder icon since photos are simulated
-  static IconData iconFor(String category) {
-    switch (category) {
-      case 'Cameras':
-        return Icons.photo_camera_outlined;
-      case 'Tools':
-        return Icons.construction;
-      case 'Camping':
-        return Icons.terrain;
-      default:
-        return Icons.devices_other;
-    }
-  }
+
+  static IconData iconFor(String category) => ItemPhoto.iconFor(category);
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +28,8 @@ class ItemCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Photo placeholder
-            Container(
-              height: 100,
-              width: double.infinity,
-              color: const Color(0xFFE3E8E6),
-              child: Icon(iconFor(item['category']), size: 34, color: const Color(0xFFB5C2BF)),
-            ),
+
+ItemPhoto(item: item, height: 140, width: double.infinity, iconSize: 34),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: Column(
