@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class PostEditItemState extends StatefulWidget {
   const PostEditItemState({super.key});
 
@@ -11,7 +13,7 @@ class PostEditItemState extends StatefulWidget {
   State<PostEditItemState> createState() => PostEditItemPage();
 }
 
-// State class (XPage naming convention)
+
 class PostEditItemPage extends State<PostEditItemState> {
   final TextEditingController nameCtrl = TextEditingController();
   final TextEditingController rateCtrl = TextEditingController();
@@ -22,7 +24,8 @@ class PostEditItemPage extends State<PostEditItemState> {
   final List<String> conditions = ['Like new', 'Good', 'Fair'];
   String category = 'Cameras';
   String condition = 'Good';
-  String? editId; // null = posting a new item
+  String image = ''; 
+  String? editId; 
   bool loaded = false;
   final Map<String, String> errors = {};
 
@@ -31,7 +34,6 @@ class PostEditItemPage extends State<PostEditItemState> {
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
 
-  // Read the route argument once: a String id = edit that item, none = create
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -47,13 +49,14 @@ class PostEditItemPage extends State<PostEditItemState> {
         rateCtrl.text = item['dailyRate'].toString();
         depositCtrl.text = item['deposit'].toString();
         descCtrl.text = item['description'];
-        category = item['category'];
+        category = item['category'];        
         condition = item['condition'];
+        image = (item['image'] ?? '') as String;
       }
     }
   }
 
-  // Free all controllers when the screen is removed
+
   @override
   void dispose() {
     nameCtrl.dispose();
@@ -63,7 +66,7 @@ class PostEditItemPage extends State<PostEditItemState> {
     super.dispose();
   }
 
-  // Validate, then create or update the item
+
   void save() {
     final name = nameCtrl.text.trim();
     final rate = int.tryParse(rateCtrl.text.replaceAll(',', '').trim());
@@ -77,7 +80,7 @@ class PostEditItemPage extends State<PostEditItemState> {
       if (deposit == null || deposit < 0) errors['deposit'] = 'Enter a deposit.';
       if (desc.isEmpty) errors['desc'] = 'Add a short description.';
 
-      // Money is calculated from these values, so they can't change mid-rental
+
       if (editId != null && errors.isEmpty && AllItems.isLocked(editId!)) {
         final old = AllItems.byId(editId!)!;
         if (rate != old['dailyRate'] || deposit != old['deposit']) {
@@ -95,6 +98,7 @@ class PostEditItemPage extends State<PostEditItemState> {
       item['deposit'] = deposit;
       item['condition'] = condition;
       item['description'] = desc;
+      item['image'] = image;
     } else {
       AllItems.items.add({
         'id': AllItems.newId(),
@@ -106,12 +110,13 @@ class PostEditItemPage extends State<PostEditItemState> {
         'condition': condition,
         'description': desc,
         'listed': true,
+        'image': image,
       });
     }
     Navigator.pop(context);
   }
 
-  // Clears one field's error as soon as the user edits it
+
   void clearError(String key) {
     if (errors.containsKey(key) || errors.containsKey('lock')) {
       setState(() {
@@ -121,7 +126,6 @@ class PostEditItemPage extends State<PostEditItemState> {
     }
   }
 
-  // Rounded dropdown that matches the text fields
   Widget buildDropdown(String label, String value, List<String> options, ValueChanged<String> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,48 +159,144 @@ class PostEditItemPage extends State<PostEditItemState> {
     );
   }
 
+  List<String> get photos => AllItems.gallery;
+
+
+  List<String> get rowPhotos {
+    final row = photos.take(3).toList();
+    if (image.isNotEmpty && !row.contains(image)) {
+      row.insert(0, image);
+      if (row.length > 3) row.removeLast();
+    }
+    return row;
+  }
+
+
+  Widget buildPhotoTile(String path) {
+    final selected = image == path;
+    return GestureDetector(
+      onTap: () => setState(() => image = selected ? '' : path),
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: selected ? teal : Colors.transparent, width: 2),
+        ),
+        child: ItemPhoto(item: {'image': path, 'category': category}, width: 66, height: 66, radius: 13, iconSize: 26),
+      ),
+    );
+  }
+void openGallery() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Choose a photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+              const SizedBox(height: 2),
+              const Text('Simulated gallery for this demo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+              const SizedBox(height: 14),
+              GridView.count(
+                shrinkWrap: true,
+                crossAxisCount: 3,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                children: photos
+                    .map((p) => GestureDetector(
+                          onTap: () {
+                            setState(() => image = p);
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo added (simulated upload).')));
+                          },
+                          child: ItemPhoto(item: {'image': p, 'category': category}, radius: 14, iconSize: 28),
+                        ))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget buildUploadTile() {
+    return GestureDetector(
+       onTap: openGallery,
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        width: 76,
+        height: 76,
+        child: CustomPaint(
+          painter: _DashedBorderPainter(),
+          child: const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_photo_alternate_outlined, size: 22, color: gray),
+                SizedBox(height: 2),
+                Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: gray)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
-            // Scrolling form
+     
+            TopBar(title: editId != null ? 'Edit item' : 'Post item'),
+
+      
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 16),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Title switches between post and edit
-                    Text(editId != null ? 'Edit item' : 'Post item',
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                    const SizedBox(height: 16),
 
-                    // Dashed photo placeholder (simulated)
-                    GestureDetector(
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload is simulated in this demo.'))),
-                      child: CustomPaint(
-                        painter: _DashedBorderPainter(),
-                        child: Container(
-                          height: 110,
-                          alignment: Alignment.center,
-                          child: const Text('Add photos (placeholder)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                        ),
+
+                    const Padding(
+                      padding: EdgeInsets.only(left: 2, bottom: 7),
+                      child: Text('Photo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                    ),
+                    SizedBox(
+                      height: 80,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [buildUploadTile(), ...rowPhotos.map(buildPhotoTile)],
                       ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 2, top: 4),
+                      child: Text('Tap Upload or a photo to choose one (tap a photo again for none). Upload is simulated.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
                     ),
                     const SizedBox(height: 16),
 
-                    // Item name
+        
                     InputField(label: 'Item name', controller: nameCtrl, hint: 'Projector (HD)', errorText: errors['name'], onChanged: (_) => clearError('name')),
                     const SizedBox(height: 14),
 
-                    // Category (needed so the item shows up under Browse chips)
+
                     buildDropdown('Category', category, categories, (v) => setState(() => category = v)),
                     const SizedBox(height: 14),
 
-                    // Daily rate + deposit side by side
+
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -207,11 +307,11 @@ class PostEditItemPage extends State<PostEditItemState> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Condition
+
                     buildDropdown('Condition', condition, conditions, (v) => setState(() => condition = v)),
                     const SizedBox(height: 14),
 
-                    // Description (multi-line)
+
                     InputField(
                       label: 'Description',
                       controller: descCtrl,
@@ -226,7 +326,7 @@ class PostEditItemPage extends State<PostEditItemState> {
               ),
             ),
 
-            // Pinned: price-lock message + save / cancel
+
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
               child: Column(
@@ -276,7 +376,6 @@ class PostEditItemPage extends State<PostEditItemState> {
   }
 }
 
-// Draws the dashed rounded border for the photo box (Flutter has no built-in dashed border)
 class _DashedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

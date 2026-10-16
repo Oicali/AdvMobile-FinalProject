@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class MyAddressesState extends StatefulWidget {
@@ -126,20 +127,13 @@ class MyAddressesPage extends State<MyAddressesState> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Back arrow + title
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 14),
-              child: Row(
-                children: [
-                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.arrow_back, color: ink)),
-                  const SizedBox(width: 8),
-                  const Text('My addresses', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                ],
-              ),
-            ),
+            // Pinned shared top bar (back arrow, logo, big title)
+            const TopBar(title: 'My addresses'),
+            const SizedBox(height: 16),
 
             // Cards, or an empty message
             Expanded(

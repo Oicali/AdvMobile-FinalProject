@@ -1,4 +1,4 @@
-// Sample reviews; role = role of the person being rated (the "to" user)
+
 class AllReviews {
   static List<Map<String, dynamic>> reviews = [
     {'id': 'v1', 'rentalId': 'r3', 'from': 'juan', 'to': 'jon', 'role': 'lender', 'score': 5, 'comment': 'Drill worked great and delivery was on time.'},
@@ -9,14 +9,13 @@ class AllReviews {
     {'id': 'v6', 'rentalId': 'r8', 'from': 'mika', 'to': 'jon', 'role': 'borrower', 'score': 5, 'comment': 'Returned on time and in good shape.'},
   ];
 
-  // Average score a user received in one role ('lender' or 'borrower'); null = no reviews yet
   static double? averageFor(String username, String role) {
     final scores = reviews.where((v) => v['to'] == username && v['role'] == role).map((v) => v['score'] as int).toList();
     if (scores.isEmpty) return null;
     return scores.reduce((a, b) => a + b) / scores.length;
   }
 
-  // Has this user already reviewed this rental?
+
   static bool hasReviewed(String? username, String rentalId) {
     return reviews.any((v) => v['from'] == username && v['rentalId'] == rentalId);
   }

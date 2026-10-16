@@ -6,7 +6,9 @@ import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class IncomingRequestsState extends StatefulWidget {
@@ -90,13 +92,27 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
-          const SizedBox(height: 3),
-          Text('${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])} · $days ${days == 1 ? 'day' : 'days'}',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-          const SizedBox(height: 3),
-          Text('$how · Total ${AppSettings.peso(AllItems.totalDue(r))} incl. deposit',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ItemPhoto(item: item ?? <String, dynamic>{}, width: 52, height: 52, radius: 14, iconSize: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+                    const SizedBox(height: 3),
+                    Text('${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])} · $days ${days == 1 ? 'day' : 'days'}',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                    const SizedBox(height: 3),
+                    Text('$how · Total ${AppSettings.peso(AllItems.totalDue(r))} incl. deposit',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 12),
 
           // Approve (filled) / Decline (outlined)
@@ -149,20 +165,13 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
       backgroundColor: const Color(0xFFF4F6F5),
       bottomNavigationBar: const SafeArea(child: BottomNav(current: 2)),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title with a back arrow to My listings
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 14),
-              child: Row(
-                children: [
-                  GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.arrow_back, color: ink)),
-                  const SizedBox(width: 8),
-                  const Text('Requests', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                ],
-              ),
-            ),
+            // Pinned shared top bar (back arrow, logo, big title)
+            const TopBar(title: 'Requests'),
+            const SizedBox(height: 16),
 
             // Request cards, or an empty message
             Expanded(

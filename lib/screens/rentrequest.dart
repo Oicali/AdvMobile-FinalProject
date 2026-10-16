@@ -6,7 +6,8 @@ import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
-import 'package:advmobile_finalproject/widgets/itemcard.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class RentRequestState extends StatefulWidget {
@@ -216,7 +217,13 @@ class RentRequestPage extends State<RentRequestState> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-      body: SafeArea(
+      body: Column(
+        children: [
+          // Shared top bar stays pinned while the form scrolls
+          const TopBar(title: 'Rent request'),
+          Expanded(
+            child: SafeArea(
+        top: false, // TopBar handles the status bar itself
         // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
         child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
@@ -228,22 +235,14 @@ class RentRequestPage extends State<RentRequestState> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Screen title
-                      const Text('Rent request', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      const SizedBox(height: 16),
+
 
                       // Item summary card
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: cardStyle(20),
                         child: Row(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(color: const Color(0xFFE3E8E6), borderRadius: BorderRadius.circular(14)),
-                              child: Icon(ItemCard.iconFor(item!['category']), size: 24, color: const Color(0xFFB5C2BF)),
-                            ),
+                          children: [ItemPhoto(item: item!, width: 52, height: 52, radius: 14, iconSize: 24),
                             const SizedBox(width: 12),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,6 +356,9 @@ class RentRequestPage extends State<RentRequestState> {
             ),
           ),
         ),
+      ),
+          ),
+        ],
       ),
     );
   }

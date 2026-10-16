@@ -4,8 +4,9 @@ import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class AddEditAddressState extends StatefulWidget {
   const AddEditAddressState({super.key});
 
@@ -13,7 +14,7 @@ class AddEditAddressState extends StatefulWidget {
   State<AddEditAddressState> createState() => AddEditAddressPage();
 }
 
-// State class (XPage naming convention)
+
 class AddEditAddressPage extends State<AddEditAddressState> {
   final TextEditingController labelCtrl = TextEditingController();
   final TextEditingController streetCtrl = TextEditingController();
@@ -21,16 +22,16 @@ class AddEditAddressPage extends State<AddEditAddressState> {
   final TextEditingController cityCtrl = TextEditingController();
 
   bool isDefault = false;
-  bool onboarding = false; // true when reached from Register
-  Map<String, dynamic>? newUser; // pending account, only set during onboarding
-  String? editId; // null = creating a new address
+  bool onboarding = false; 
+  Map<String, dynamic>? newUser; 
+  String? editId; 
   bool loaded = false;
   final Map<String, String> errors = {};
 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
 
-  // Read the route argument once: String = edit that id, Map with onboarding = from Register, null = create
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -51,14 +52,14 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     } else if (args is Map && args['onboarding'] == true) {
       onboarding = true;
       newUser = Map<String, dynamic>.from(args['newUser']);
-      isDefault = true; // first address is always the default
+      isDefault = true; 
     } else {
-      // New address: default only if it's the user's first
+
       isDefault = AllAddresses.ownedBy(ActiveUser.username).isEmpty;
     }
   }
 
-  // Free all controllers when the screen is removed
+
   @override
   void dispose() {
     labelCtrl.dispose();
@@ -68,10 +69,10 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     super.dispose();
   }
 
-  // Who owns the address being saved (pending user during onboarding)
+
   String? get owner => onboarding ? newUser!['username'] as String : ActiveUser.username;
 
-  // Create the pending account now (called only from Save or Skip)
+
   void createPendingAccount() {
     AllUsers.users.add({
       ...newUser!,
@@ -80,18 +81,18 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     });
   }
 
-  // Show the success screen and clear the stack so back can't return to the form
+
   void finishOnboarding() {
     Navigator.pushNamedAndRemoveUntil(context, '/accountcreated', (route) => false, arguments: newUser!['fullname']);
   }
 
-  // Skip: create the account with no address
+
   void skip() {
     createPendingAccount();
     finishOnboarding();
   }
 
-  // Validate, then create or update the address
+
   void save() {
     final label = labelCtrl.text.trim();
     final street = streetCtrl.text.trim();
@@ -107,7 +108,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     });
     if (errors.isNotEmpty) return;
 
-    // The account must exist before an address can belong to it
+
     if (onboarding) createPendingAccount();
 
     Map<String, dynamic> saved;
@@ -119,13 +120,13 @@ class AddEditAddressPage extends State<AddEditAddressState> {
       saved['city'] = city;
       saved['isDefault'] = isDefault;
     } else {
-      // Contact number comes from the user's profile phone
+
       final phone = AllUsers.byUsername(owner)?['phone'] ?? '';
       saved = {'id': AllAddresses.newId(), 'owner': owner, 'label': label, 'street': street, 'barangay': barangay, 'city': city, 'phone': phone, 'isDefault': isDefault};
       AllAddresses.addresses.add(saved);
     }
 
-    // Only one default per owner; and never leave an owner with zero defaults
+
     final mine = AllAddresses.ownedBy(owner);
     if (saved['isDefault'] == true) {
       for (final a in mine) {
@@ -142,7 +143,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     }
   }
 
-  // Clears one field's error as soon as the user edits it
+
   void clearError(String key) {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
@@ -151,24 +152,27 @@ class AddEditAddressPage extends State<AddEditAddressState> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-      body: SafeArea(
-        // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
-        child: LayoutBuilder(
+      body: Column(
+        children: [
+
+          TopBar(title: editId != null ? 'Edit address' : 'Add address'),
+          Expanded(
+            child: SafeArea(
+              top: false,
+
+              child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Title switches between add and edit
-                      Text(editId != null ? 'Edit address' : 'Add address',
-                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      const SizedBox(height: 20),
 
-                      // Address fields
+
+
                       InputField(label: 'Label', controller: labelCtrl, hint: 'Home', errorText: errors['label'], onChanged: (_) => clearError('label')),
                       const SizedBox(height: 14),
                       InputField(label: 'House no. and street', controller: streetCtrl, hint: 'Blk 4 Lot 12, Mabini St.', errorText: errors['street'], onChanged: (_) => clearError('street')),
@@ -178,7 +182,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
                       InputField(label: 'City / Municipality', controller: cityCtrl, hint: 'Your city', errorText: errors['city'], onChanged: (_) => clearError('city')),
                       const SizedBox(height: 14),
 
-                      // Default address checkbox
+
                       InkWell(
                         onTap: () => setState(() => isDefault = !isDefault),
                         child: Row(
@@ -197,7 +201,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
                       const Spacer(),
                       const SizedBox(height: 20),
 
-                      // Filled pill: save
+
                       SizedBox(
                         height: 52,
                         child: ElevatedButton(
@@ -214,7 +218,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Outlined pill: Skip for now during onboarding, Cancel otherwise
+
                       SizedBox(
                         height: 52,
                         child: OutlinedButton(
@@ -235,6 +239,9 @@ class AddEditAddressPage extends State<AddEditAddressState> {
             ),
           ),
         ),
+      ),
+          ),
+        ],
       ),
     );
   }

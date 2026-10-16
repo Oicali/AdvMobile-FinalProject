@@ -5,8 +5,9 @@ import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allsaved.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
-import 'package:advmobile_finalproject/widgets/itemcard.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class MyListingsState extends StatefulWidget {
@@ -77,11 +78,20 @@ class MyListingsPage extends State<MyListingsState> {
     );
   }
 
-  // One listing card: photo, name + tag, price line, Edit / Delete
+
+  Map<String, dynamic>? awaitingReturn(String itemId) {
+    for (final r in AllRentals.rentals) {
+      if (r['itemId'] == itemId && r['status'] == 'Returned' && r['lenderConfirmed'] != true) return r;
+    }
+    return null;
+  }
+
+
   Widget buildListing(Map<String, dynamic> item) {
     final id = item['id'] as String;
     final rented = AllItems.currentRental(id) != null;
     final locked = AllItems.isLocked(id);
+    final waiting = awaitingReturn(id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -90,13 +100,8 @@ class MyListingsPage extends State<MyListingsState> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Photo placeholder
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(color: const Color(0xFFE3E8E6), borderRadius: BorderRadius.circular(14)),
-            child: Icon(ItemCard.iconFor(item['category']), size: 24, color: const Color(0xFFB5C2BF)),
-          ),
+          // Shared item photo
+          ItemPhoto(item: item, width: 52, height: 52, radius: 14, iconSize: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -123,6 +128,11 @@ class MyListingsPage extends State<MyListingsState> {
                     buildPill('Delete', locked ? null : () => confirmDelete(item)),
                   ],
                 ),
+                if (waiting != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: buildPill('Confirm return', () => Navigator.pushNamed(context, '/confirmreturn', arguments: waiting['id']).then((_) => setState(() {}))),
+                  ),
                 if (locked)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -146,14 +156,13 @@ class MyListingsPage extends State<MyListingsState> {
       backgroundColor: const Color(0xFFF4F6F5),
       bottomNavigationBar: const SafeArea(child: BottomNav(current: 2)),
       body: SafeArea(
+        top: false, // TopBar handles the status bar itself
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Screen title
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 20, 24, 14),
-              child: Text('My listings', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-            ),
+            // Shared top bar (tab screen, so no back arrow)
+            const TopBar(title: 'My listings', showBack: false),
+            const SizedBox(height: 16),
 
             // Entry point to Incoming Requests, with a pending count
             Padding(

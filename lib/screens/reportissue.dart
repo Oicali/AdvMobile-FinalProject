@@ -7,7 +7,8 @@ import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/dashedbox.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
-import 'package:advmobile_finalproject/widgets/itemcard.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class ReportIssueState extends StatefulWidget {
@@ -148,17 +149,18 @@ class ReportIssuePage extends State<ReportIssueState> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
+        top: false, // TopBar handles the status bar itself
         child: Column(
           children: [
+            // Shared top bar (back arrow, logo, title)
+            const TopBar(title: 'Report an issue'),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Screen title
-                    const Text('Report an issue', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                    const SizedBox(height: 16),
+
 
                     // Which rental this is about
                     Container(
@@ -170,12 +172,7 @@ class ReportIssuePage extends State<ReportIssueState> {
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(color: const Color(0xFFE3E8E6), borderRadius: BorderRadius.circular(14)),
-                            child: Icon(ItemCard.iconFor(item?['category'] ?? ''), size: 22, color: const Color(0xFFB5C2BF)),
-                          ),
+                          ItemPhoto(item: item ?? <String, dynamic>{}, width: 48, height: 48, radius: 14, iconSize: 22),
                           const SizedBox(width: 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

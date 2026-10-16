@@ -6,8 +6,9 @@ import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class DisputeDetailsState extends StatefulWidget {
   const DisputeDetailsState({super.key});
 
@@ -15,7 +16,7 @@ class DisputeDetailsState extends StatefulWidget {
   State<DisputeDetailsState> createState() => DisputeDetailsPage();
 }
 
-// State class (XPage naming convention)
+
 class DisputeDetailsPage extends State<DisputeDetailsState> {
   Map<String, dynamic>? dispute;
   bool loaded = false;
@@ -25,7 +26,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
 
-  // Read the dispute id once and look it up
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -35,10 +36,10 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     dispute = arg is String ? AllDisputes.byId(arg) : null;
   }
 
-  // Display name for a username
+
   String nameOf(String username) => AllUsers.byUsername(username)?['fullname'] ?? username;
 
-  // Filer: append to their message. Other party: set their reply.
+
   Future<void> addText({required bool isReply}) async {
     final d = dispute!;
     final text = await showDialog<String>(
@@ -59,7 +60,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     });
   }
 
-  // Confirm, then remove the dispute entirely
+
   Future<void> cancelDispute() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -77,20 +78,20 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     Navigator.pop(context);
   }
 
-  // White rounded card style
+
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       );
 
-  // Small grey text line
+
   Widget grey(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
       );
 
-  // One timeline row
+
   Widget buildStep(String label, String detail, bool done) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -110,7 +111,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     );
   }
 
-  // A titled message card (message or reply)
+
   Widget buildTextCard(String title, String body) {
     return Container(
       width: double.infinity,
@@ -128,7 +129,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     );
   }
 
-  // Filled / outlined pill buttons for the pinned area
+
   Widget pillButton(String label, VoidCallback onTap, {bool filled = false}) {
     const shape = StadiumBorder();
     const text = TextStyle(fontSize: 15, fontWeight: FontWeight.w700);
@@ -159,25 +160,20 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
+
+            const TopBar(title: 'Dispute'),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Back arrow + title
-                    Row(
-                      children: [
-                        GestureDetector(onTap: () => Navigator.pop(context), child: const Icon(Icons.arrow_back, color: ink)),
-                        const SizedBox(width: 8),
-                        const Text('Dispute', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
 
-                    // Item name + status tag
+
+
                     Row(
                       children: [
                         Expanded(child: Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink))),
@@ -186,7 +182,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Reason, date, amount, what happens to the deposit
+
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -213,7 +209,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Timeline: Submitted -> Under review -> Resolved
+
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -227,7 +223,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                       ),
                     ),
 
-                    // The reporter's message, and the other person's reply if any
+
                     buildTextCard(isFiler ? 'Your message' : "${nameOf(d['filedBy'])}'s message", d['message']),
                     if (reply.isNotEmpty) buildTextCard(isFiler ? "${nameOf(other)}'s reply" : 'Your reply', reply),
                   ],
@@ -235,7 +231,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
               ),
             ),
 
-            // Pinned actions depend on who is looking and whether it is resolved
+
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
               child: Column(
@@ -257,7 +253,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
   }
 }
 
-// Small dialog that owns its own text controller (safe to close without disposal errors)
+
 class _TextDialog extends StatefulWidget {
   final String title;
   final String hint;
@@ -271,7 +267,6 @@ class _TextDialog extends StatefulWidget {
 class _TextDialogState extends State<_TextDialog> {
   late final TextEditingController ctrl = TextEditingController(text: widget.initial);
 
-  // Free the controller when the dialog is removed
   @override
   void dispose() {
     ctrl.dispose();

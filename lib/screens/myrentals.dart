@@ -6,6 +6,7 @@ import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
 class MyRentalsState extends StatefulWidget {
@@ -199,14 +200,13 @@ class MyRentalsPage extends State<MyRentalsState> {
       backgroundColor: const Color(0xFFF4F6F5),
       bottomNavigationBar: const SafeArea(child: BottomNav(current: 1)),
       body: SafeArea(
+        top: false,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Screen title
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 20, 24, 14),
-              child: Text('My rentals', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-            ),
+            // Shared top bar (tab screen, so no back arrow)
+            const TopBar(title: 'My rentals', showBack: false),
+            const SizedBox(height: 14),
 
             // Tab chips
             SingleChildScrollView(

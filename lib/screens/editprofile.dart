@@ -3,8 +3,9 @@ import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
+import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class EditProfileState extends StatefulWidget {
   const EditProfileState({super.key});
 
@@ -12,7 +13,7 @@ class EditProfileState extends StatefulWidget {
   State<EditProfileState> createState() => EditProfilePage();
 }
 
-// State class (XPage naming convention)
+
 class EditProfilePage extends State<EditProfileState> {
   final TextEditingController fullnameCtrl = TextEditingController();
   final TextEditingController phoneCtrl = TextEditingController();
@@ -24,7 +25,7 @@ class EditProfilePage extends State<EditProfileState> {
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
 
-  // Prefill the fields with the signed-in user's current values
+
   @override
   void initState() {
     super.initState();
@@ -36,7 +37,7 @@ class EditProfilePage extends State<EditProfileState> {
     }
   }
 
-  // Free all controllers when the screen is removed
+
   @override
   void dispose() {
     fullnameCtrl.dispose();
@@ -45,14 +46,14 @@ class EditProfilePage extends State<EditProfileState> {
     super.dispose();
   }
 
-  // Default address shown read-only; it is stored in AllAddresses, not on the user
+
   String get defaultAddressText {
     final mine = AllAddresses.ownedBy(ActiveUser.username).where((a) => a['isDefault'] == true);
     if (mine.isEmpty) return '';
     return '${mine.first['street']}, ${mine.first['barangay']}';
   }
 
-  // Validate, then write the new values into the user's map
+
   void save() {
     final fullname = fullnameCtrl.text.trim();
     final phone = phoneCtrl.text.trim();
@@ -74,7 +75,7 @@ class EditProfilePage extends State<EditProfileState> {
     Navigator.pop(context);
   }
 
-  // Clears one field's error as soon as the user edits it
+
   void clearError(String key) {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
@@ -85,23 +86,27 @@ class EditProfilePage extends State<EditProfileState> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
-      body: SafeArea(
-        // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
-        child: LayoutBuilder(
+      body: Column(
+        children: [
+
+          const TopBar(title: 'Edit profile'),
+          Expanded(
+            child: SafeArea(
+              top: false,
+
+              child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Screen title
-                      const Text('Edit profile', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                      const SizedBox(height: 18),
 
-                      // Avatar placeholder + simulated photo button
+
+                    
                       Row(
                         children: [
                           const CircleAvatar(radius: 32, backgroundColor: Color(0xFFE3E8E6), child: Icon(Icons.person, size: 30, color: Color(0xFFB5C2BF))),
@@ -121,7 +126,7 @@ class EditProfilePage extends State<EditProfileState> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Editable fields
+   
                       InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
                       const SizedBox(height: 14),
                       InputField(label: 'Mobile number', controller: phoneCtrl, hint: '0917 000 0000', keyboard: TextInputType.phone, errorText: errors['phone'], onChanged: (_) => clearError('phone')),
@@ -129,7 +134,7 @@ class EditProfilePage extends State<EditProfileState> {
                       InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
                       const SizedBox(height: 14),
 
-                      // Default delivery address: read-only, tap to manage in My addresses
+     
                       const Padding(
                         padding: EdgeInsets.only(left: 2, bottom: 7),
                         child: Text('Default delivery address', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
@@ -158,7 +163,6 @@ class EditProfilePage extends State<EditProfileState> {
                       const Spacer(),
                       const SizedBox(height: 20),
 
-                      // Filled pill: save
                       SizedBox(
                         height: 52,
                         child: ElevatedButton(
@@ -175,7 +179,7 @@ class EditProfilePage extends State<EditProfileState> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Outlined pill: cancel
+  
                       SizedBox(
                         height: 52,
                         child: OutlinedButton(
@@ -196,6 +200,9 @@ class EditProfilePage extends State<EditProfileState> {
             ),
           ),
         ),
+      ),
+          ),
+        ],
       ),
     );
   }
