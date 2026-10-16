@@ -10,7 +10,6 @@ import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
 class IncomingRequestsState extends StatefulWidget {
   const IncomingRequestsState({super.key});
 
@@ -18,13 +17,13 @@ class IncomingRequestsState extends StatefulWidget {
   State<IncomingRequestsState> createState() => IncomingRequestsPage();
 }
 
-// State class (XPage naming convention)
+
 class IncomingRequestsPage extends State<IncomingRequestsState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
 
-  // Why this request can't be approved right now (null = fine)
+
   String? conflictFor(Map<String, dynamic> r) {
     for (final o in AllRentals.rentals) {
       if (o['id'] == r['id'] || o['itemId'] != r['itemId']) continue;
@@ -37,7 +36,7 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
     return null;
   }
 
-  // Approve unless it clashes; then promote to Active if the start date has arrived
+
   void approve(Map<String, dynamic> r) {
     final conflict = conflictFor(r);
     if (conflict != null) {
@@ -51,20 +50,20 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request approved.')));
   }
 
-  // Decline the request
+
   void decline(Map<String, dynamic> r) {
     setState(() => r['status'] = 'Declined');
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request declined.')));
   }
 
-  // White rounded card style
+
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       );
 
-  // One request card: borrower + rating, item, dates, how + total, Approve / Decline
+
   Widget buildRequest(Map<String, dynamic> r) {
     final borrower = AllUsers.byUsername(r['borrower']);
     final item = AllItems.byId(r['itemId']);
@@ -79,7 +78,7 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Borrower name (opens their public profile) + borrower rating
+
           Row(
             children: [
               Expanded(
@@ -115,7 +114,7 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
           ),
           const SizedBox(height: 12),
 
-          // Approve (filled) / Decline (outlined)
+
           Row(
             children: [
               Expanded(
@@ -169,11 +168,10 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pinned shared top bar (back arrow, logo, big title)
+
             const TopBar(title: 'Requests'),
             const SizedBox(height: 16),
 
-            // Request cards, or an empty message
             Expanded(
               child: requests.isEmpty
                   ? const Center(
