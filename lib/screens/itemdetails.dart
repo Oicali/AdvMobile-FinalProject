@@ -22,6 +22,7 @@ class ItemDetailsPage extends State<ItemDetailsState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
 
   String availabilityLine(String itemId) {
@@ -29,6 +30,59 @@ class ItemDetailsPage extends State<ItemDetailsState> {
     if (r == null) return 'Available now';
     if (r['status'] == 'Overdue') return 'Available once it is returned';
     return 'Available from ${AppSettings.shortDate(r['end'])}';
+  }
+
+  BoxDecoration cardStyle(double radius) => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+      );
+
+  String initialOf(String name) {
+    final n = name.trim();
+    return n.isEmpty ? '?' : n[0].toUpperCase();
+  }
+
+  Widget buildSection(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: teal),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+          child: Icon(icon, size: 18, color: teal),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
+              const SizedBox(height: 1),
+              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -79,24 +133,31 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                     const SizedBox(height: 8),
 
 
+                    const SizedBox(height: 10),
+                    buildSection(Icons.person_outline, 'Lender'),
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(context, '/profile', arguments: item['owner']),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
-                        ),
+                        decoration: cardStyle(16),
                         child: Row(
                           children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(color: teal, shape: BoxShape.circle),
+                              child: Text(initialOf((owner?['fullname'] ?? item['owner']).toString()),
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+                            ),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(owner?['fullname'] ?? item['owner'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                                  Text(owner?['fullname'] ?? item['owner'], style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
                                   const SizedBox(height: 3),
-                                  Text('Lender · ${rating == null ? 'No reviews yet' : 'Rating ${rating.toStringAsFixed(1)}'}',
+                                  Text(rating == null ? 'No reviews yet' : 'Rating ${rating.toStringAsFixed(1)}',
                                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
                                 ],
                               ),
@@ -106,14 +167,30 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 20),
+                    buildSection(Icons.info_outline, 'About this item'),
 
 
-                    Text(item['description'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray, height: 1.45)),
-                    const SizedBox(height: 8),
-                    Text('Condition: ${item['condition']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                    const SizedBox(height: 4),
-                    Text(availabilityLine(id), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: cardStyle(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item['description'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray, height: 1.45)),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                            child: Divider(height: 1, thickness: 1, color: Color(0xFFE3E8E6)),
+                          ),
+                          buildInfoRow(Icons.verified_outlined, 'Condition', '${item['condition']}'),
+                          const SizedBox(height: 12),
+                          buildInfoRow(Icons.category_outlined, 'Category', '${item['category']}'),
+                          const SizedBox(height: 12),
+                          buildInfoRow(Icons.event_available_outlined, 'Availability', availabilityLine(id)),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),

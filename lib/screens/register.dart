@@ -26,6 +26,9 @@ class RegisterPage extends State<RegisterState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color error = Color(0xFFD64545);
+  static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
+  static const Color barOff = Color(0xFFD5E3E0);
 
   // Free all controllers when the screen is removed
   @override
@@ -76,6 +79,41 @@ class RegisterPage extends State<RegisterState> {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
 
+  Widget buildStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(child: Container(height: 5, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999)))),
+            const SizedBox(width: 6),
+            Expanded(child: Container(height: 5, decoration: BoxDecoration(color: barOff, borderRadius: BorderRadius.circular(999)))),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text('Step 1 of 2 · Your details', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+      ],
+    );
+  }
+
+  Widget buildSection(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: teal),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +138,9 @@ class RegisterPage extends State<RegisterState> {
                     children: [
 
 
-                      // Form fields
+                      buildStep(),
+                      const SizedBox(height: 22),
+                      buildSection(Icons.person_outline, 'About you'),
                       InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
                       const SizedBox(height: 14),
                       InputField(label: 'Username', controller: usernameCtrl, hint: 'juan', errorText: errors['username'], onChanged: (_) => clearError('username')),
@@ -109,6 +149,8 @@ class RegisterPage extends State<RegisterState> {
                       const SizedBox(height: 14),
                       InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
                       const SizedBox(height: 14),
+                      const SizedBox(height: 10),
+                      buildSection(Icons.lock_outline, 'Secure your account'),
                       InputField(label: 'Password', controller: passwordCtrl, hint: 'Create a password', obscure: true, errorText: errors['password'], onChanged: (_) => clearError('password')),
                       const SizedBox(height: 14),
                       InputField(label: 'Confirm password', controller: confirmCtrl, hint: 'Re-enter your password', obscure: true, errorText: errors['confirm'], onChanged: (_) => clearError('confirm')),
@@ -118,6 +160,10 @@ class RegisterPage extends State<RegisterState> {
 
                       const Spacer(),
                       const SizedBox(height: 20),
+                      const Text('Next, you can add an address or skip it. Account setup is simulated in this demo.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+                      const SizedBox(height: 14),
 
                       // Filled pill: create the account and move to the address step
                       SizedBox(

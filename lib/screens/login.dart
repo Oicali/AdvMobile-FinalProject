@@ -45,27 +45,73 @@ class LoginPage extends State<LoginState> {
     Navigator.pushReplacementNamed(context, u == 'admin' ? '/demomenu' : '/home');
   }
 
-  // Mint header: same colour and logo placement as the Home top bar
+  // Soft translucent circle used as header decoration
+  Widget buildCircle(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(color: Color(0x26FFFFFF), shape: BoxShape.circle),
+    );
+  }
+
+  // Small translucent pill with an icon, shown under the tagline
+  Widget buildPill(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(color: const Color(0x40FFFFFF), borderRadius: BorderRadius.circular(999)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: teal),
+          const SizedBox(width: 5),
+          Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: teal)),
+        ],
+      ),
+    );
+  }
+
+  // Mint header: decorative circles, logo on a white card, tagline and feature pills
   Widget buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 36),
+      clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
         color: mint,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: const [
-            SizedBox(height: 40),
-            AppLogo(size: 130),
-            SizedBox(height: 12),
-            Text("Borrow what you need. Lend what you don't use.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: ink)),
-          ],
-        ),
+      child: Stack(
+        children: [
+          Positioned(top: -50, right: -40, child: buildCircle(180)),
+          Positioned(top: 100, left: -60, child: buildCircle(140)),
+          Positioned(bottom: -30, right: 40, child: buildCircle(90)),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 36, 24, 32),
+              child: Column(
+                children: [
+                  // Logo sits directly on the mint
+                  const AppLogo(size: 120),
+                  const SizedBox(height: 16),
+                  const Text("Borrow what you need. Lend what you don't use.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: ink)),
+                  const SizedBox(height: 14),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      buildPill(Icons.inventory_2_outlined, 'List items'),
+                      buildPill(Icons.calendar_today_outlined, 'Rent by the day'),
+                      buildPill(Icons.verified_user_outlined, 'Refundable deposit'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -148,6 +194,12 @@ class LoginPage extends State<LoginState> {
                       child: const Text('Create account'),
                     ),
                   ),
+                  const SizedBox(height: 20),
+
+                  // Demo label: everything in the app is simulated
+                  const Text('Front-end demo. Accounts, payments and ID checks are simulated.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
                 ],
               ),
             ),

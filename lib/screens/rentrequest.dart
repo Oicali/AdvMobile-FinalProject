@@ -9,7 +9,7 @@ import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class RentRequestState extends StatefulWidget {
   const RentRequestState({super.key});
 
@@ -17,22 +17,23 @@ class RentRequestState extends StatefulWidget {
   State<RentRequestState> createState() => RentRequestPage();
 }
 
-// State class (XPage naming convention)
+
 class RentRequestPage extends State<RentRequestState> {
   final TextEditingController addressCtrl = TextEditingController();
   Map<String, dynamic>? item;
   String start = '';
   String end = '';
-  String method = 'pickup'; // 'pickup' or 'delivery'
-  String? formError; // message shown above the buttons
+  String method = 'pickup'; 
+  String? formError; 
   bool loaded = false;
 
   static const Color teal = Color(0xFF0F5C5C);
+  static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
 
-  // Read the item id once, then set default dates and prefill the delivery address
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -51,27 +52,27 @@ class RentRequestPage extends State<RentRequestState> {
     }
   }
 
-  // Free the controller when the screen is removed
+
   @override
   void dispose() {
     addressCtrl.dispose();
     super.dispose();
   }
 
-  // Calculated money (never stored)
+
   int get days => AppSettings.daysBetween(start, end);
   int get rentalFee => (item!['dailyRate'] as int) * days;
   int get deliveryFee => method == 'delivery' ? AppSettings.deliveryFee : 0;
   int get deposit => item!['deposit'] as int;
   int get total => rentalFee + deliveryFee + deposit;
 
-  // Local DateTime for the picker (the picker wants local, not UTC)
+
   DateTime local(String ymd) {
     final d = AppSettings.toDate(ymd);
     return DateTime(d.year, d.month, d.day);
   }
 
-  // Open the calendar; keep end after start
+
   Future<void> pickDate(bool isStart) async {
     final first = isStart ? AppSettings.demoDate : AppSettings.addDays(start, 1);
     final picked = await showDatePicker(
@@ -93,7 +94,7 @@ class RentRequestPage extends State<RentRequestState> {
     });
   }
 
-  // Why these dates can't be booked (null = fine)
+
   String? conflictMessage() {
     for (final r in AllRentals.rentals) {
       if (r['itemId'] != item!['id']) continue;
@@ -108,7 +109,7 @@ class RentRequestPage extends State<RentRequestState> {
     return null;
   }
 
-  // Validate, then create the rental as "Requested"
+
   void sendRequest() {
     if (method == 'delivery' && addressCtrl.text.trim().isEmpty) {
       setState(() => formError = 'Enter a delivery address.');
@@ -136,18 +137,56 @@ class RentRequestPage extends State<RentRequestState> {
 
     final lender = AllUsers.byUsername(item!['owner'])?['fullname'] ?? item!['owner'];
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request sent to $lender.')));
-    // Open My rentals on the Requested tab so the new request is visible
+
     Navigator.pushNamedAndRemoveUntil(context, '/myrentals', (route) => false, arguments: 'Requested');
   }
 
-  // White rounded card style
+
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 3))],
       );
 
-  // Tappable date box with a label above
+  Widget buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 0, 0, 12),
+      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+    );
+  }
+
+  Widget buildSummary() {
+    final owner = AllUsers.byUsername(item!['owner'])?['fullname'] ?? item!['owner'];
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: cardStyle(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ItemPhoto(item: item!, width: 84, height: 84, radius: 16, iconSize: 32),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item!['name'],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
+                const SizedBox(height: 6),
+                Text('${AppSettings.peso(item!['dailyRate'])} / day · Deposit ${AppSettings.peso(item!['deposit'])}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                const SizedBox(height: 4),
+                Text('Lender: $owner', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget buildDateBox(String label, String value, VoidCallback onTap) {
     return Expanded(
       child: Column(
@@ -161,9 +200,20 @@ class RentRequestPage extends State<RentRequestState> {
             onTap: onTap,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
               decoration: cardStyle(16),
-              child: Text(AppSettings.longDate(value), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: ink)),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined, size: 16, color: teal),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(AppSettings.longDate(value),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -171,8 +221,26 @@ class RentRequestPage extends State<RentRequestState> {
     );
   }
 
-  // Radio-style option card for pickup / delivery
-  Widget buildMethodCard(String value, String label) {
+  Widget buildDurationPill() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(999)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.schedule, size: 14, color: teal),
+            const SizedBox(width: 6),
+            Text('$days ${days == 1 ? 'day' : 'days'} rental', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: teal)),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget buildMethodCard(String value, IconData icon, String label, String sub) {
     final selected = method == value;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -182,13 +250,28 @@ class RentRequestPage extends State<RentRequestState> {
           formError = null;
         }),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: cardStyle(16).copyWith(border: Border.all(color: selected ? teal : Colors.transparent, width: 1.5)),
           child: Row(
             children: [
-              Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 20, color: selected ? teal : gray),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                child: Icon(icon, size: 19, color: teal),
+              ),
               const SizedBox(width: 12),
-              Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                    const SizedBox(height: 2),
+                    Text(sub, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ),
+              ),
+              Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 22, color: selected ? teal : gray),
             ],
           ),
         ),
@@ -196,7 +279,7 @@ class RentRequestPage extends State<RentRequestState> {
     );
   }
 
-  // One line of the cost summary
+
   Widget buildCostRow(String label, String value, {bool bold = false}) {
     final style = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: ink);
     return Padding(
@@ -204,6 +287,62 @@ class RentRequestPage extends State<RentRequestState> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [Text(label, style: style), Text(value, style: style)],
+      ),
+    );
+  }
+
+  Widget buildBottomBar() {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (formError != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(formError!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: error)),
+                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Total due', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
+                        const SizedBox(height: 2),
+                        Text(AppSettings.peso(total), style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: ink)),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: sendRequest,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: teal,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 26),
+                        shape: const StadiumBorder(),
+                        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      child: const Text('Send request'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -222,142 +361,68 @@ class RentRequestPage extends State<RentRequestState> {
           // Shared top bar stays pinned while the form scrolls
           const TopBar(title: 'Rent request'),
           Expanded(
-            child: SafeArea(
-        top: false, // TopBar handles the status bar itself
-        // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
-        child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  buildSummary(),
+                  const SizedBox(height: 22),
+
+                  buildSectionTitle('Rental dates'),
+                  Row(
                     children: [
-
-
-                      // Item summary card
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: cardStyle(20),
-                        child: Row(
-                          children: [ItemPhoto(item: item!, width: 52, height: 52, radius: 14, iconSize: 24),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(item!['name'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
-                                const SizedBox(height: 2),
-                                Text('${AppSettings.peso(item!['dailyRate'])} / day', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Start and end dates
-                      Row(
-                        children: [
-                          buildDateBox('Start date', start, () => pickDate(true)),
-                          const SizedBox(width: 12),
-                          buildDateBox('End date', end, () => pickDate(false)),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Pickup or delivery
-                      const Padding(
-                        padding: EdgeInsets.only(left: 2, bottom: 8),
-                        child: Text('Get the item', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
-                      ),
-                      buildMethodCard('pickup', 'Pick up from lender · Free'),
-                      buildMethodCard('delivery', 'Deliver to me · ${AppSettings.peso(AppSettings.deliveryFee)}'),
-
-                      // Delivery address only when delivery is chosen
-                      if (method == 'delivery') ...[
-                        const SizedBox(height: 4),
-                        InputField(
-                          label: 'Delivery address',
-                          controller: addressCtrl,
-                          hint: 'House no., street, barangay, city',
-                          onChanged: (_) {
-                            if (formError != null) setState(() => formError = null);
-                          },
-                        ),
-                      ],
-                      const SizedBox(height: 14),
-
-                      // Cost summary (all calculated)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: cardStyle(16),
-                        child: Column(
-                          children: [
-                            buildCostRow('${AppSettings.peso(item!['dailyRate'])} × $days ${days == 1 ? 'day' : 'days'}', AppSettings.peso(rentalFee)),
-                            buildCostRow('Delivery fee', AppSettings.peso(deliveryFee)),
-                            buildCostRow('Deposit (refundable)', AppSettings.peso(deposit)),
-                            buildCostRow('Total due', AppSettings.peso(total), bold: true),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Late fee + return method note
-                      Text('Late return costs ${AppSettings.peso(lateRate)} per extra day, taken from the deposit. Return uses the same method.',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
-
-                      const Spacer(),
-                      const SizedBox(height: 16),
-
-                      // Validation / conflict message
-                      if (formError != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Text(formError!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: error)),
-                        ),
-
-                      // Filled pill: send
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: sendRequest,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: teal,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: const Text('Send request'),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Outlined pill: cancel
-                      SizedBox(
-                        height: 52,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: teal,
-                            side: const BorderSide(color: teal, width: 1.5),
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
+                      buildDateBox('Start date', start, () => pickDate(true)),
+                      const SizedBox(width: 12),
+                      buildDateBox('End date', end, () => pickDate(false)),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  buildDurationPill(),
+                  const SizedBox(height: 22),
+
+                  buildSectionTitle('Get the item'),
+                  buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free'),
+                  buildMethodCard('delivery', Icons.local_shipping_outlined, 'Deliver to me', AppSettings.peso(AppSettings.deliveryFee)),
+
+                  // Delivery address only when delivery is chosen
+                  if (method == 'delivery') ...[
+                    const SizedBox(height: 4),
+                    InputField(
+                      label: 'Delivery address',
+                      controller: addressCtrl,
+                      hint: 'House no., street, barangay, city',
+                      onChanged: (_) {
+                        if (formError != null) setState(() => formError = null);
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+
+                  buildSectionTitle('Cost summary'),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: cardStyle(16),
+                    child: Column(
+                      children: [
+                        buildCostRow('${AppSettings.peso(item!['dailyRate'])} × $days ${days == 1 ? 'day' : 'days'}', AppSettings.peso(rentalFee)),
+                        buildCostRow('Delivery fee', AppSettings.peso(deliveryFee)),
+                        buildCostRow('Deposit (refundable)', AppSettings.peso(deposit)),
+                        const Divider(height: 18, color: Color(0xFFE3E8E6)),
+                        buildCostRow('Total due', AppSettings.peso(total), bold: true),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Late fee + return method note
+                  Text('Late return costs ${AppSettings.peso(lateRate)} per extra day, taken from the deposit. Return uses the same method.',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+                ],
               ),
             ),
           ),
-        ),
-      ),
-          ),
+          buildBottomBar(),
         ],
       ),
     );

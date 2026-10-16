@@ -5,6 +5,7 @@ import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
@@ -92,37 +93,177 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
       );
 
 
-  Widget buildStep(String label, String detail, bool done) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+  Widget buildStep(String label, String detail, bool done, bool isLast) {
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: done ? teal : Colors.transparent, border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 1.5)),
+          SizedBox(
+            width: 14,
+            child: Column(
+              children: [
+                const SizedBox(height: 3),
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done ? teal : Colors.white,
+                    border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 2),
+                  ),
+                ),
+                if (!isLast) Expanded(child: Container(width: 2, color: done ? teal : const Color(0xFFD5E3E0))),
+              ],
+            ),
           ),
-          const SizedBox(width: 12),
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
-          const SizedBox(width: 8),
-          Flexible(child: Text(detail, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray))),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: done ? ink : gray)),
+                  if (detail.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(detail, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSectionHeader(String title, [String trailing = '']) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 2, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          if (trailing.isNotEmpty) Text(trailing, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCircle(double size, Color color) {
+    return Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
+  }
+
+  Widget buildSummary(Map<String, dynamic>? r, Map<String, dynamic>? item, String status, bool resolved) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: cardStyle(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ItemPhoto(item: item ?? <String, dynamic>{}, width: 84, height: 84, radius: 16, iconSize: 32),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item?['name'] ?? 'Item',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
+                const SizedBox(height: 8),
+                StatusTag(text: status, attention: !resolved),
+                if (r != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Rental ${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHero(Map<String, dynamic> d, int amount) {
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [teal, Color(0xFF2A8C80)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(top: -30, right: -20, child: buildCircle(120, const Color(0x1FFFFFFF))),
+          Positioned(bottom: -40, right: 70, child: buildCircle(90, const Color(0x14FFFFFF))),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Ruling', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFD6ECE6))),
+                const SizedBox(height: 4),
+                Text('${d['outcome']}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+                if (amount > 0) ...[
+                  const SizedBox(height: 10),
+                  Text('Amount in question: ${AppSettings.peso(amount)}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFFD6ECE6), height: 1.4)),
+                ],
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(color: const Color(0x33FFFFFF), borderRadius: BorderRadius.circular(999)),
+                  child: const Text('Simulated admin ruling', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
 
-  Widget buildTextCard(String title, String body) {
+  Widget buildMessageCard(String name, String role, String body, {bool mine = false}) {
+    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: cardStyle(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
-          const SizedBox(height: 6),
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(color: teal, shape: BoxShape.circle),
+                child: Text(initial, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(mine ? '$name (you)' : name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
+                    Text(role, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: gray)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFE3E8E6)),
+          const SizedBox(height: 12),
           Text(body, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.45)),
         ],
       ),
@@ -174,15 +315,15 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
 
 
 
-                    Row(
-                      children: [
-                        Expanded(child: Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink))),
-                        StatusTag(text: status, attention: !resolved),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+                    buildSummary(r, item, status, resolved),
+                    const SizedBox(height: 16),
+                    if (resolved) ...[
+                      buildHero(d, amount),
+                      const SizedBox(height: 16),
+                    ],
 
 
+                    buildSectionHeader('Report'),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -203,38 +344,47 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                                 ],
                               ),
                             ),
-                          if (resolved) grey('Outcome: ${d['outcome']}') else if (amount > 0) grey('This part of the deposit is held until the dispute is resolved.'),
+                          if (!resolved && amount > 0) grey('This part of the deposit is held until the dispute is resolved.'),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
 
 
+                    buildSectionHeader('Progress'),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                      decoration: cardStyle(16),
+                      padding: const EdgeInsets.all(18),
+                      decoration: cardStyle(20),
                       child: Column(
                         children: [
-                          buildStep('Submitted', filedOn.isEmpty ? '' : AppSettings.shortDate(filedOn), true),
-                          buildStep('Under review', status == 'Submitted' ? 'Pending' : (resolved ? 'Done' : 'Now'), status != 'Submitted'),
-                          buildStep('Resolved', resolved ? '${d['outcome']}' : 'Pending', resolved),
+                          buildStep('Submitted', filedOn.isEmpty ? '' : AppSettings.shortDate(filedOn), true, false),
+                          buildStep('Admin review (simulated)', status == 'Submitted' ? 'Pending' : (resolved ? 'Done' : 'Now'), status != 'Submitted', false),
+                          buildStep('Resolved', resolved ? '${d['outcome']}' : 'Pending', resolved, true),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
 
 
-                    buildTextCard(isFiler ? 'Your message' : "${nameOf(d['filedBy'])}'s message", d['message']),
-                    if (reply.isNotEmpty) buildTextCard(isFiler ? "${nameOf(other)}'s reply" : 'Your reply', reply),
+                    buildSectionHeader('Messages', reply.isEmpty ? '1 message' : '2 messages'),
+                    buildMessageCard(nameOf(d['filedBy']), 'Report', d['message'], mine: isFiler),
+                    if (reply.isNotEmpty) buildMessageCard(nameOf(other), 'Reply', reply, mine: !isFiler),
                   ],
                 ),
               ),
             ),
 
 
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (!resolved && isFiler) ...[
                     pillButton('Add more details', () => addText(isReply: false)),

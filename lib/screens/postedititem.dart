@@ -32,6 +32,7 @@ class PostEditItemPage extends State<PostEditItemState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color error = Color(0xFFD64545);
 
   @override
@@ -187,7 +188,26 @@ class PostEditItemPage extends State<PostEditItemState> {
       ),
     );
   }
-void openGallery() {
+
+  Widget buildSection(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: teal),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
+    );
+  }
+
+  void openGallery() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -271,10 +291,7 @@ void openGallery() {
                   children: [
 
 
-                    const Padding(
-                      padding: EdgeInsets.only(left: 2, bottom: 7),
-                      child: Text('Photo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
-                    ),
+                    buildSection(Icons.photo_camera_outlined, 'Photo'),
                     SizedBox(
                       height: 80,
                       child: ListView(
@@ -286,9 +303,10 @@ void openGallery() {
                       padding: EdgeInsets.only(left: 2, top: 4),
                       child: Text('Tap Upload or a photo to choose one (tap a photo again for none). Upload is simulated.', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 22),
 
         
+                    buildSection(Icons.info_outline, 'Details'),
                     InputField(label: 'Item name', controller: nameCtrl, hint: 'Projector (HD)', errorText: errors['name'], onChanged: (_) => clearError('name')),
                     const SizedBox(height: 14),
 
@@ -297,15 +315,7 @@ void openGallery() {
                     const SizedBox(height: 14),
 
 
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: InputField(label: 'Daily rate (₱)', controller: rateCtrl, hint: '400', keyboard: TextInputType.number, errorText: errors['rate'], onChanged: (_) => clearError('rate'))),
-                        const SizedBox(width: 12),
-                        Expanded(child: InputField(label: 'Deposit (₱)', controller: depositCtrl, hint: '4,000', keyboard: TextInputType.number, errorText: errors['deposit'], onChanged: (_) => clearError('deposit'))),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
+
 
 
                     buildDropdown('Condition', condition, conditions, (v) => setState(() => condition = v)),
@@ -321,15 +331,31 @@ void openGallery() {
                       errorText: errors['desc'],
                       onChanged: (_) => clearError('desc'),
                     ),
+                    const SizedBox(height: 22),
+                    buildSection(Icons.payments_outlined, 'Pricing'),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: InputField(label: 'Daily rate (₱)', controller: rateCtrl, hint: '400', keyboard: TextInputType.number, errorText: errors['rate'], onChanged: (_) => clearError('rate'))),
+                        const SizedBox(width: 12),
+                        Expanded(child: InputField(label: 'Deposit (₱)', controller: depositCtrl, hint: '4,000', keyboard: TextInputType.number, errorText: errors['deposit'], onChanged: (_) => clearError('deposit'))),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
 
 
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (errors['lock'] != null)
                     Padding(
@@ -348,7 +374,7 @@ void openGallery() {
                         shape: const StadiumBorder(),
                         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
-                      child: const Text('Save listing'),
+                      child: Text(editId != null ? 'Save changes' : 'Save listing'),
                     ),
                   ),
                   const SizedBox(height: 12),

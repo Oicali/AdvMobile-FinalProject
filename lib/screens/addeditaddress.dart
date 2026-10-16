@@ -30,6 +30,8 @@ class AddEditAddressPage extends State<AddEditAddressState> {
 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
+  static const Color gray = Color(0xFF6A7776);
+  static const Color barOff = Color(0xFFD5E3E0);
 
 
   @override
@@ -148,6 +150,26 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
 
+  Widget buildStep() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(child: Container(height: 5, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999)))),
+              const SizedBox(width: 6),
+              Expanded(child: Container(height: 5, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999)))),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text('Step 2 of 2 · Your address (optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,6 +195,7 @@ class AddEditAddressPage extends State<AddEditAddressState> {
 
 
 
+                      if (onboarding) buildStep(),
                       InputField(label: 'Label', controller: labelCtrl, hint: 'Home', errorText: errors['label'], onChanged: (_) => clearError('label')),
                       const SizedBox(height: 14),
                       InputField(label: 'House no. and street', controller: streetCtrl, hint: 'Blk 4 Lot 12, Mabini St.', errorText: errors['street'], onChanged: (_) => clearError('street')),

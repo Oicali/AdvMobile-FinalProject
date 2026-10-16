@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
+import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allsaved.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
@@ -23,6 +24,7 @@ class MyListingsPage extends State<MyListingsState> {
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
   // White rounded card style
   BoxDecoration cardStyle(double radius) => BoxDecoration(
@@ -86,12 +88,20 @@ class MyListingsPage extends State<MyListingsState> {
     return null;
   }
 
+  Map<String, dynamic>? awaitingRating(String itemId) {
+    for (final r in AllRentals.rentals) {
+      if (r['itemId'] == itemId && r['lender'] == ActiveUser.username && r['status'] == 'Completed' && !AllReviews.hasReviewed(ActiveUser.username, r['id'])) return r;
+    }
+    return null;
+  }
+
 
   Widget buildListing(Map<String, dynamic> item) {
     final id = item['id'] as String;
     final rented = AllItems.currentRental(id) != null;
     final locked = AllItems.isLocked(id);
     final waiting = awaitingReturn(id);
+    final toRate = awaitingRating(id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -100,8 +110,7 @@ class MyListingsPage extends State<MyListingsState> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Shared item photo
-          ItemPhoto(item: item, width: 52, height: 52, radius: 14, iconSize: 24),
+          ItemPhoto(item: item, width: 84, height: 84, radius: 16, iconSize: 32),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -133,6 +142,11 @@ class MyListingsPage extends State<MyListingsState> {
                     padding: const EdgeInsets.only(top: 8),
                     child: buildPill('Confirm return', () => Navigator.pushNamed(context, '/confirmreturn', arguments: waiting['id']).then((_) => setState(() {}))),
                   ),
+                if (toRate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: buildPill('Rate borrower', () => Navigator.pushNamed(context, '/ratereview', arguments: toRate['id']).then((_) => setState(() {}))),
+                  ),
                 if (locked)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -143,6 +157,41 @@ class MyListingsPage extends State<MyListingsState> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildSectionHeader(List<Map<String, dynamic>> items) {
+    final count = items.length;
+    final out = items.where((i) => AllItems.currentRental(i['id']) != null).length;
+    final summary = '$count ${count == 1 ? 'item' : 'items'}${out > 0 ? ' · $out rented out' : ''}';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Your items', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Text(summary, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildEmpty() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 44, color: Color(0xFFB5C2BF)),
+            SizedBox(height: 10),
+            Text('Nothing listed yet', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+            SizedBox(height: 4),
+            Text('Post an item with a daily rate and deposit, and others can start renting it.',
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+          ],
+        ),
       ),
     );
   }
@@ -170,14 +219,30 @@ class MyListingsPage extends State<MyListingsState> {
               child: GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/incomingrequests').then((_) => setState(() {})),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: cardStyle(16),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+                  decoration: cardStyle(22),
                   child: Row(
                     children: [
-                      const Expanded(child: Text('Booking requests', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink))),
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                        child: const Icon(Icons.inbox_outlined, size: 26, color: teal),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Booking requests', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+                            SizedBox(height: 3),
+                            Text('Approve or decline rentals of your items', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.3)),
+                          ],
+                        ),
+                      ),
                       if (pending > 0) StatusTag(text: '$pending pending', attention: true),
                       const SizedBox(width: 6),
-                      const Icon(Icons.chevron_right, size: 18, color: gray),
+                      const Icon(Icons.chevron_right, size: 24, color: gray),
                     ],
                   ),
                 ),
@@ -185,16 +250,10 @@ class MyListingsPage extends State<MyListingsState> {
             ),
             const SizedBox(height: 14),
 
-            // Listing cards, or an empty message
+            buildSectionHeader(items),
             Expanded(
               child: items.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40),
-                        child: Text("You haven't listed anything yet. Tap Post new item to start.",
-                            textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
-                      ),
-                    )
+                  ? buildEmpty()
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
                       children: items.map(buildListing).toList(),
@@ -216,7 +275,14 @@ class MyListingsPage extends State<MyListingsState> {
                     shape: const StadiumBorder(),
                     textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
-                  child: const Text('Post new item'),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add, size: 20),
+                      SizedBox(width: 6),
+                      Text('Post new item'),
+                    ],
+                  ),
                 ),
               ),
             ),
