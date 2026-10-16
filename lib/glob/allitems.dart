@@ -54,11 +54,11 @@ class AllItems {
   static List<String> gallery = [
     'assets/images/i1.jpg',
     'assets/images/i2.jpg',
-    'assets/images/i3.png',
+    'assets/images/i3.jpg',
     'assets/images/i4.jpg',
     'assets/images/i5.jpg',
     'assets/images/i6.jpg',
-    'assets/images/i7.jpeg',
+    'assets/images/i7.jpg',
     'assets/images/i8.jpg',
   ];
 

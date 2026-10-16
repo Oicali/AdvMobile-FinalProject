@@ -5,10 +5,11 @@ import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
-// Widget class (XState naming convention)
+
 class MyRentalsState extends StatefulWidget {
   const MyRentalsState({super.key});
 
@@ -16,7 +17,7 @@ class MyRentalsState extends StatefulWidget {
   State<MyRentalsState> createState() => MyRentalsPage();
 }
 
-// State class (XPage naming convention)
+
 class MyRentalsPage extends State<MyRentalsState> {
   final List<String> tabs = ['Requested', 'Active', 'Overdue', 'Done'];
   String tab = 'Active';
@@ -27,8 +28,9 @@ class MyRentalsPage extends State<MyRentalsState> {
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
+  static const Color warn = Color(0xFFE8893A);
 
-  // Bring statuses up to date, then open on the tab passed in (or the most urgent non-empty one)
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -64,14 +66,14 @@ class MyRentalsPage extends State<MyRentalsState> {
     }
   }
 
-  // My rentals as borrower in one tab: soonest due first, newest first on Done
+
   List<Map<String, dynamic>> rentalsIn(String t) {
     final list = AllRentals.rentals.where((r) => r['borrower'] == ActiveUser.username && inTab(r, t)).toList();
     list.sort((a, b) => (a['end'] as String).compareTo(b['end'] as String));
     return t == 'Done' ? list.reversed.toList() : list;
   }
 
-  // The grey lines under the item name, depending on status
+
   List<String> detailLines(Map<String, dynamic> r) {
     final String status = r['status'];
     final end = AppSettings.shortDate(r['end']);
@@ -99,7 +101,7 @@ class MyRentalsPage extends State<MyRentalsState> {
     }
   }
 
-  // Confirm, then withdraw a pending request
+
   Future<void> cancelRequest(Map<String, dynamic> r) async {
     final item = AllItems.byId(r['itemId']);
     final ok = await showDialog<bool>(
@@ -117,30 +119,137 @@ class MyRentalsPage extends State<MyRentalsState> {
     setState(() => r['status'] = 'Cancelled');
   }
 
-  // White rounded card style
+
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       );
 
-  // One tab chip (selected = solid teal)
+
+  IconData tabIcon(String t) {
+    switch (t) {
+      case 'Requested':
+        return Icons.hourglass_empty;
+      case 'Active':
+        return Icons.play_circle_outline;
+      case 'Overdue':
+        return Icons.warning_amber_rounded;
+      default:
+        return Icons.check_circle_outline;
+    }
+  }
+
+
+  String tabTitle(String t) => t == 'Done' ? 'Past rentals' : '$t rentals';
+
+
   Widget buildChip(String label) {
     final selected = label == tab;
+    final count = rentalsIn(label).length;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: GestureDetector(
         onTap: () => setState(() => tab = label),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(color: selected ? teal : tealSoft, borderRadius: BorderRadius.circular(999)),
-          child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? Colors.white : teal)),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(tabIcon(label), size: 15, color: selected ? Colors.white : teal),
+              const SizedBox(width: 6),
+              Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? Colors.white : teal)),
+              if (count > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: selected ? const Color(0x33FFFFFF) : Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text('$count', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: selected ? Colors.white : teal)),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // One rental card; tapping it opens Rental details
+
+  Widget buildSectionHeader(int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(tabTitle(tab), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Text('$count ${count == 1 ? 'rental' : 'rentals'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildEmpty() {
+    String title;
+    String hint;
+    switch (tab) {
+      case 'Requested':
+        title = 'No pending requests';
+        hint = 'Found something you like? Send a request to the owner.';
+        break;
+      case 'Active':
+        title = 'Nothing rented right now';
+        hint = 'Items you borrow will show up here.';
+        break;
+      case 'Overdue':
+        title = 'Nothing overdue';
+        hint = 'Every item is back on time.';
+        break;
+      default:
+        title = 'No past rentals yet';
+        hint = 'Finished rentals and their refunds appear here.';
+    }
+    final showBrowse = tab == 'Requested' || tab == 'Active';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(tabIcon(tab), size: 44, color: const Color(0xFFB5C2BF)),
+            const SizedBox(height: 10),
+            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+            const SizedBox(height: 4),
+            Text(hint, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+            if (showBrowse) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: teal,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  child: const Text('Browse items'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+
   Widget buildRental(Map<String, dynamic> r) {
     final item = AllItems.byId(r['itemId']);
     final String status = r['status'];
@@ -150,25 +259,44 @@ class MyRentalsPage extends State<MyRentalsState> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: cardStyle(20),
+        decoration: cardStyle(20).copyWith(border: status == 'Overdue' ? Border.all(color: warn, width: 1.5) : null),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Item name + status tag (orange when overdue)
+     
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink))),
-                const SizedBox(width: 8),
-                StatusTag(text: status, attention: status == 'Overdue'),
+                ItemPhoto(item: item ?? <String, dynamic>{'image': '', 'category': ''}, width: 64, height: 64, radius: 14, iconSize: 26),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(item?['name'] ?? 'Item',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                          ),
+                          const SizedBox(width: 8),
+                          StatusTag(text: status, attention: status == 'Overdue'),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ...detailLines(r).map((l) => Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text(l, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                          )),
+                    ],
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 6),
-            ...detailLines(r).map((l) => Padding(
-                  padding: const EdgeInsets.only(bottom: 3),
-                  child: Text(l, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                )),
 
-            // Pending requests can be withdrawn right from the list
+     
             if (status == 'Requested') ...[
               const SizedBox(height: 10),
               SizedBox(
@@ -204,11 +332,11 @@ class MyRentalsPage extends State<MyRentalsState> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Shared top bar (tab screen, so no back arrow)
+        
             const TopBar(title: 'My rentals', showBack: false),
             const SizedBox(height: 14),
 
-            // Tab chips
+            
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -216,10 +344,13 @@ class MyRentalsPage extends State<MyRentalsState> {
             ),
             const SizedBox(height: 16),
 
-            // Rental cards, or an empty message
+        
+            buildSectionHeader(list.length),
+
+      
             Expanded(
               child: list.isEmpty
-                  ? Center(child: Text('No ${tab.toLowerCase()} rentals.', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)))
+                  ? buildEmpty()
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                       children: list.map(buildRental).toList(),

@@ -23,6 +23,7 @@ import 'screens/home.dart';
 import 'screens/demomenu.dart';
 import 'screens/confirmreturn.dart';
 import 'screens/splash.dart';
+import 'screens/ratereview.dart';
 
 // App entry point
 void main() {
@@ -66,6 +67,7 @@ class MyFirstApp extends StatelessWidget {
         "/demomenu": (context) => DemoMenuState(),
         "/confirmreturn": (context) => ConfirmReturnState(),
         "/splash": (context) => SplashState(),
+        "/ratereview": (context) => RateReviewState(),
       },
 
       // App name + teal theme + Plus Jakarta Sans font app-wide

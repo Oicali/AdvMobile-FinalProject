@@ -18,6 +18,7 @@ class MyAddressesPage extends State<MyAddressesState> {
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
   // My addresses with the default one first
   List<Map<String, dynamic>> get mine {
@@ -94,16 +95,36 @@ class MyAddressesPage extends State<MyAddressesState> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label + Default tag
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: Text(a['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink))),
-              if (isDefault) const StatusTag(text: 'Default'),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                child: const Icon(Icons.location_on_outlined, size: 18, color: teal),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(a['label'], style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
+                    const SizedBox(height: 4),
+                    Text('${a['street']}, ${a['barangay']}, ${a['city']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+                  ],
+                ),
+              ),
+              if (isDefault) ...[
+                const SizedBox(width: 8),
+                const StatusTag(text: 'Default'),
+              ],
             ],
           ),
-          const SizedBox(height: 4),
-          Text('${a['street']}, ${a['barangay']}, ${a['city']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
-          const SizedBox(height: 12),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFE3E8E6)),
+          ),
 
           // Actions wrap onto a second line on narrow phones
           Wrap(
@@ -131,20 +152,46 @@ class MyAddressesPage extends State<MyAddressesState> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pinned shared top bar (back arrow, logo, big title)
             const TopBar(title: 'My addresses'),
-            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(26, 18, 26, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Saved addresses', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+                  Text(list.length == 1 ? '1 address' : '${list.length} addresses',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+                ],
+              ),
+            ),
 
-            // Cards, or an empty message
             Expanded(
               child: list.isEmpty
-                  ? const Center(child: Text('No saved addresses yet.', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)))
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.location_off_outlined, size: 44, color: Color(0xFFB5C2BF)),
+                            SizedBox(height: 10),
+                            Text('No saved addresses', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+                            SizedBox(height: 4),
+                            Text('Add one to use it for delivery.', textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                          ],
+                        ),
+                      ),
+                    )
                   : ListView(padding: const EdgeInsets.fromLTRB(24, 0, 24, 16), children: list.map(buildAddress).toList()),
             ),
 
-            // Pinned: add address
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+              ),
               child: SizedBox(
                 width: double.infinity,
                 height: 52,

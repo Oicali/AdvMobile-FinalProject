@@ -17,6 +17,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color warn = Color(0xFF7A3A0B);
 
 
   BoxDecoration cardStyle(double radius) => BoxDecoration(
@@ -25,18 +26,75 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       );
 
-  Widget buildRow(String label, String value, {bool bold = false}) {
+  Widget buildRow(String label, String value, {bool bold = false, Color? valueColor}) {
     final style = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: ink);
+    final valueStyle = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w600, color: valueColor ?? ink);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Flexible(child: Text(label, style: style)), const SizedBox(width: 12), Text(value, style: style)],
+        children: [Flexible(child: Text(label, style: style)), const SizedBox(width: 12), Text(value, style: valueStyle)],
       ),
     );
   }
 
   String minus(int n) => n == 0 ? AppSettings.peso(0) : '− ${AppSettings.peso(n)}';
+
+  Widget buildDivider() => const Divider(height: 8, color: Color(0xFFE3E8E6));
+
+  Widget buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, bottom: 12),
+      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+    );
+  }
+
+  Widget buildCircle(double size, Color color) {
+    return Container(width: size, height: size, decoration: BoxDecoration(color: color, shape: BoxShape.circle));
+  }
+
+  Widget buildHero(Map<String, dynamic> r) {
+    final released = r['lenderConfirmed'] == true;
+    return Container(
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [teal, Color(0xFF2A8C80)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(top: -30, right: -20, child: buildCircle(120, const Color(0x1FFFFFFF))),
+          Positioned(bottom: -40, right: 70, child: buildCircle(90, const Color(0x14FFFFFF))),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Deposit refund', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFD6ECE6))),
+                const SizedBox(height: 4),
+                Text(AppSettings.peso(RentalFees.depositRefund(r)),
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+                const SizedBox(height: 10),
+                Text(released ? 'The refund has been released.' : 'Released after the lender confirms the return.',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFFD6ECE6), height: 1.4)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(color: const Color(0x33FFFFFF), borderRadius: BorderRadius.circular(999)),
+                  child: const Text('Simulated refund', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +127,9 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
 
 
         
+                    buildHero(r),
+                    const SizedBox(height: 18),
+                    buildSectionTitle('Charges'),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                       decoration: cardStyle(16),
@@ -76,7 +137,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                         children: [
                           buildRow('Rental fee ($days ${days == 1 ? 'day' : 'days'})', AppSettings.peso(RentalFees.rentalFee(r))),
                           if (delivery > 0) buildRow('Delivery fee', AppSettings.peso(delivery)),
-                          buildRow('Late fee ($lateDays ${lateDays == 1 ? 'day' : 'days'} × ${AppSettings.peso(perDay)})', AppSettings.peso(late)),
+                          buildRow('Late fee ($lateDays ${lateDays == 1 ? 'day' : 'days'} × ${AppSettings.peso(perDay)})', AppSettings.peso(late), valueColor: late > 0 ? warn : null),
                           buildRow('Damage deduction', AppSettings.peso(damage)),
                         ],
                       ),
@@ -84,6 +145,8 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                     const SizedBox(height: 12),
 
                
+                    const SizedBox(height: 6),
+                    buildSectionTitle('Deposit'),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                       decoration: cardStyle(16),
@@ -92,6 +155,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                           buildRow('Deposit held', AppSettings.peso(RentalFees.deposit(r))),
                           buildRow('Less late fee', minus(late)),
                           if (damage > 0) buildRow('Less damage deduction', minus(damage)),
+                          buildDivider(),
                           buildRow('Deposit refund', AppSettings.peso(RentalFees.depositRefund(r)), bold: true),
                         ],
                       ),
@@ -99,9 +163,9 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                     const SizedBox(height: 12),
 
 
-                    Text(
-                      'Late fees are capped at the deposit. ${r['lenderConfirmed'] == true ? 'The refund has been released.' : 'The refund is released after the lender confirms the return.'}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4),
+                    const Text(
+                      'Late fees are capped at the deposit.',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4),
                     ),
                   ],
                 ),
@@ -109,8 +173,13 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
             ),
 
 
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+              ),
               child: Column(
                 children: [
                   SizedBox(

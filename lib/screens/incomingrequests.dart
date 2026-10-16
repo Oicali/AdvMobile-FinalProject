@@ -22,6 +22,7 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
 
   String? conflictFor(Map<String, dynamic> r) {
@@ -81,32 +82,44 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
 
           Row(
             children: [
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(color: teal, shape: BoxShape.circle),
+                child: Text(initialOf((borrower?['fullname'] ?? r['borrower']).toString()),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/profile', arguments: r['borrower']),
-                  child: Text(borrower?['fullname'] ?? r['borrower'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                  child: Text(borrower?['fullname'] ?? r['borrower'], style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
                 ),
               ),
               StatusTag(text: rating == null ? 'No reviews yet' : 'Rating ${rating.toStringAsFixed(1)}'),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFE3E8E6)),
+          const SizedBox(height: 12),
            Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ItemPhoto(item: item ?? <String, dynamic>{}, width: 52, height: 52, radius: 14, iconSize: 24),
+              ItemPhoto(item: item ?? <String, dynamic>{}, width: 84, height: 84, radius: 16, iconSize: 32),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+                    Text(item?['name'] ?? 'Item', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
                     const SizedBox(height: 3),
                     Text('${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])} · $days ${days == 1 ? 'day' : 'days'}',
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
                     const SizedBox(height: 3),
-                    Text('$how · Total ${AppSettings.peso(AllItems.totalDue(r))} incl. deposit',
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                    Text(how, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                    const SizedBox(height: 6),
+                    Text('Total ${AppSettings.peso(AllItems.totalDue(r))} incl. deposit', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: teal)),
                   ],
                 ),
               ),
@@ -156,6 +169,43 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
     );
   }
 
+  String initialOf(String name) {
+    final n = name.trim();
+    return n.isEmpty ? '?' : n[0].toUpperCase();
+  }
+
+  Widget buildSectionHeader(int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Pending requests', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Text('$count ${count == 1 ? 'request' : 'requests'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildEmpty() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.inbox_outlined, size: 44, color: Color(0xFFB5C2BF)),
+            SizedBox(height: 10),
+            Text('No pending requests', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+            SizedBox(height: 4),
+            Text('New booking requests for your items will show up here.',
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final requests = AllRentals.pendingFor(ActiveUser.username);
@@ -169,14 +219,13 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            const TopBar(title: 'Requests'),
+            const TopBar(title: 'Booking requests'),
             const SizedBox(height: 16),
+            buildSectionHeader(requests.length),
 
             Expanded(
               child: requests.isEmpty
-                  ? const Center(
-                      child: Text('No pending requests.', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
-                    )
+                  ? buildEmpty()
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                       children: requests.map(buildRequest).toList(),

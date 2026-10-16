@@ -72,8 +72,7 @@ class SavedItemsPage extends State<SavedItemsState> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Shared item photo
-            ItemPhoto(item: item, width: 52, height: 52, radius: 14, iconSize: 24),
+            ItemPhoto(item: item, width: 84, height: 84, radius: 16, iconSize: 32),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -110,6 +109,40 @@ class SavedItemsPage extends State<SavedItemsState> {
     );
   }
 
+  Widget buildSectionHeader(int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Your favorites', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Text('$count ${count == 1 ? 'item' : 'items'}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildEmpty() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.favorite_border, size: 44, color: Color(0xFFB5C2BF)),
+            const SizedBox(height: 10),
+            const Text('Nothing saved yet', textAlign: TextAlign.center, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: ink)),
+            const SizedBox(height: 4),
+            const Text('Tap the heart on any listing to keep it here.',
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+            const SizedBox(height: 16),
+            buildPill('Browse items', () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false), filled: true),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final list = items;
@@ -125,15 +158,10 @@ class SavedItemsPage extends State<SavedItemsState> {
             const TopBar(title: 'Saved items'),
             const SizedBox(height: 16),
 
-            // Cards, or an empty message
+            buildSectionHeader(list.length),
             Expanded(
               child: list.isEmpty
-                  ? const Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 40),
-                        child: Text('Nothing saved yet. Tap Save item on any listing.', textAlign: TextAlign.center, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
-                      ),
-                    )
+                  ? buildEmpty()
                   : ListView(padding: const EdgeInsets.fromLTRB(24, 0, 24, 16), children: list.map(buildSaved).toList()),
             ),
           ],

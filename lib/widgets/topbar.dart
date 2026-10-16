@@ -78,39 +78,60 @@ class TopBar extends StatelessWidget {
     );
   }
 
+  // Soft translucent circle used as header decoration
+  Widget buildCircle(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(color: Color(0x26FFFFFF), shape: BoxShape.circle),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+      clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
         color: mint,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
       ),
-      // SafeArea(bottom: false) pushes content below the status bar while the mint still paints behind it
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            buildRow(context),
+      child: Stack(
+        children: [
+          // Decorative circles sit behind the content and are clipped by the rounded corners
+          Positioned(top: -45, right: -35, child: buildCircle(150)),
+          Positioned(bottom: -35, left: 50, child: buildCircle(90)),
+          Positioned(top: 30, left: -40, child: buildCircle(80)),
 
-            // Big screen title under the logo (not shown on Home)
-            if (title != null) ...[
-              const SizedBox(height: 14),
-              Text(title!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-            ],
+          // SafeArea(bottom: false) pushes content below the status bar while the mint still paints behind it
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  buildRow(context),
 
-            if (child != null) ...[
-              const SizedBox(height: 12),
-              child!,
-            ],
-          ],
-        ),
+                  // Big screen title under the logo (not shown on Home)
+                  if (title != null) ...[
+                    const SizedBox(height: 14),
+                    Text(title!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
+                  ],
+
+                  if (child != null) ...[
+                    const SizedBox(height: 12),
+                    child!,
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

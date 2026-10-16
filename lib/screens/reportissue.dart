@@ -8,6 +8,7 @@ import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/dashedbox.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
+import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 // Widget class (XState naming convention)
@@ -22,7 +23,6 @@ class ReportIssueState extends StatefulWidget {
 class ReportIssuePage extends State<ReportIssueState> {
   final TextEditingController detailsCtrl = TextEditingController();
   final TextEditingController amountCtrl = TextEditingController();
-  final List<String> reasons = ['Item damaged', 'Item not returned', 'A charge is wrong', 'Other'];
   final Map<String, String> errors = {};
   Map<String, dynamic>? rental;
   String? reason;
@@ -31,6 +31,7 @@ class ReportIssuePage extends State<ReportIssueState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color error = Color(0xFFD64545);
 
   // Read the rental id once and look the rental up
@@ -52,6 +53,8 @@ class ReportIssuePage extends State<ReportIssueState> {
   }
 
   bool get isLender => rental!['lender'] == ActiveUser.username;
+
+  List<String> get reasons => isLender ? ['Item damaged', 'Item not returned'] : ['A charge is wrong', 'Other'];
 
   // Lenders claim a money amount for damage or a missing item
   bool get needsAmount => isLender && (reason == 'Item damaged' || reason == 'Item not returned');
@@ -117,7 +120,61 @@ class ReportIssuePage extends State<ReportIssueState> {
     }
   }
 
-  // One radio row
+  BoxDecoration cardStyle(double radius) => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+      );
+
+  Widget buildSection(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: teal),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSummary(Map<String, dynamic> r, Map<String, dynamic>? item) {
+    final days = AppSettings.daysBetween(r['start'], r['end']);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: cardStyle(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ItemPhoto(item: item ?? <String, dynamic>{}, width: 84, height: 84, radius: 16, iconSize: 32),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item?['name'] ?? 'Item',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
+                const SizedBox(height: 8),
+                StatusTag(text: isLender ? 'You are the lender' : 'You are the borrower'),
+                const SizedBox(height: 8),
+                Text('${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])} · $days ${days == 1 ? 'day' : 'days'}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildReason(String label) {
     final selected = reason == label;
     return InkWell(
@@ -149,10 +206,9 @@ class ReportIssuePage extends State<ReportIssueState> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
-        top: false, // TopBar handles the status bar itself
+        top: false,
         child: Column(
           children: [
-            // Shared top bar (back arrow, logo, title)
             const TopBar(title: 'Report an issue'),
             Expanded(
               child: SingleChildScrollView(
@@ -162,37 +218,22 @@ class ReportIssuePage extends State<ReportIssueState> {
                   children: [
 
 
-                    // Which rental this is about
+                    buildSummary(r, item),
+                    const SizedBox(height: 22),
+
+                    buildSection(Icons.help_outline, 'What happened?'),
                     Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
-                      ),
-                      child: Row(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                      decoration: cardStyle(16),
+                      child: Column(
                         children: [
-                          ItemPhoto(item: item ?? <String, dynamic>{}, width: 48, height: 48, radius: 14, iconSize: 22),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item?['name'] ?? 'Item', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
-                              const SizedBox(height: 2),
-                              Text('Rented ${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                            ],
-                          ),
+                          for (var i = 0; i < reasons.length; i++) ...[
+                            if (i > 0) const Divider(height: 1, color: Color(0xFFE3E8E6)),
+                            buildReason(reasons[i]),
+                          ],
                         ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-
-                    // Reason radios
-                    const Padding(
-                      padding: EdgeInsets.only(left: 2, bottom: 4),
-                      child: Text('What happened?', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
-                    ),
-                    ...reasons.map(buildReason),
                     if (errors['reason'] != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 2, top: 4),
@@ -200,8 +241,8 @@ class ReportIssuePage extends State<ReportIssueState> {
                       ),
                     const SizedBox(height: 14),
 
-                    // Lender: how much they are claiming
                     if (needsAmount) ...[
+                      buildSection(Icons.payments_outlined, 'Your claim'),
                       InputField(
                         label: 'Amount you are claiming (₱)',
                         controller: amountCtrl,
@@ -213,8 +254,8 @@ class ReportIssuePage extends State<ReportIssueState> {
                       const SizedBox(height: 14),
                     ],
 
-                    // Borrower: the amount is whatever was taken from the deposit
                     if (disputesCharge) ...[
+                      buildSection(Icons.receipt_long_outlined, 'Charge in question'),
                       Padding(
                         padding: const EdgeInsets.only(left: 2, bottom: 14),
                         child: Text('Amount in question: ${AppSettings.peso(chargeAmount)} (late fee and damage taken from your deposit)',
@@ -222,7 +263,7 @@ class ReportIssuePage extends State<ReportIssueState> {
                       ),
                     ],
 
-                    // Details
+                    buildSection(Icons.notes, 'Tell us more'),
                     InputField(
                       label: 'Details',
                       controller: detailsCtrl,
@@ -234,20 +275,29 @@ class ReportIssuePage extends State<ReportIssueState> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Simulated photos
+                    buildSection(Icons.photo_camera_outlined, 'Photos'),
                     DashedBox(
-                      text: 'Add photos (placeholder)',
+                      text: 'Add photos (simulated)',
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload is simulated in this demo.'))),
                     ),
+                    const SizedBox(height: 16),
+                    const Text('Reports are reviewed by a simulated admin in this demo.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
                   ],
                 ),
               ),
             ),
 
-            // Pinned: form-level error + submit / cancel
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+              ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (errors['form'] != null)
                     Padding(

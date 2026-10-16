@@ -24,6 +24,7 @@ class EditProfilePage extends State<EditProfileState> {
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
 
   @override
@@ -80,6 +81,79 @@ class EditProfilePage extends State<EditProfileState> {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
 
+  BoxDecoration cardStyle(double radius) => BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+      );
+
+  String initialOf(String name) {
+    final n = name.trim();
+    return n.isEmpty ? '?' : n[0].toUpperCase();
+  }
+
+  Widget buildSection(IconData icon, String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+            child: Icon(icon, size: 16, color: teal),
+          ),
+          const SizedBox(width: 10),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
+    );
+  }
+
+  Widget buildPhotoCard() {
+    final name = (user?['fullname'] ?? '').toString();
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: cardStyle(20),
+      child: Row(
+        children: [
+          Container(
+            width: 68,
+            height: 68,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: teal,
+              shape: BoxShape.circle,
+              border: Border.all(color: tealSoft, width: 4),
+            ),
+            child: Text(initialOf(name), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Profile photo (simulated)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload is simulated in this demo.'))),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: teal,
+                    side: const BorderSide(color: teal, width: 1.5),
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  child: const Text('Change photo'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final address = defaultAddressText;
@@ -107,24 +181,9 @@ class EditProfilePage extends State<EditProfileState> {
 
 
                     
-                      Row(
-                        children: [
-                          const CircleAvatar(radius: 32, backgroundColor: Color(0xFFE3E8E6), child: Icon(Icons.person, size: 30, color: Color(0xFFB5C2BF))),
-                          const SizedBox(width: 14),
-                          OutlinedButton(
-                            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload is simulated in this demo.'))),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: teal,
-                              side: const BorderSide(color: teal, width: 1.5),
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                            ),
-                            child: const Text('Change photo'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
+                      buildPhotoCard(),
+                      const SizedBox(height: 22),
+                      buildSection(Icons.person_outline, 'About you'),
 
    
                       InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
@@ -135,21 +194,22 @@ class EditProfilePage extends State<EditProfileState> {
                       const SizedBox(height: 14),
 
      
-                      const Padding(
-                        padding: EdgeInsets.only(left: 2, bottom: 7),
-                        child: Text('Default delivery address', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
-                      ),
+                      const SizedBox(height: 8),
+                      buildSection(Icons.location_on_outlined, 'Default address'),
                       GestureDetector(
                         onTap: () => Navigator.pushNamed(context, '/myaddresses').then((_) => setState(() {})),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 3))],
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: cardStyle(16),
                           child: Row(
                             children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                                child: const Icon(Icons.location_on_outlined, size: 18, color: teal),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: Text(address.isEmpty ? 'No address yet. Tap to add one.' : address,
                                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: address.isEmpty ? const Color(0xFF98A4A2) : ink)),

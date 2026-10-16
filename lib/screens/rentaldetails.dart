@@ -5,6 +5,7 @@ import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
+import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
@@ -28,6 +29,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
+  static const Color tealSoft = Color(0xFFE3F0EE);
 
   // Read the rental id once, bring statuses up to date, then look the rental up
   @override
@@ -117,26 +119,85 @@ class RentalDetailsPage extends State<RentalDetailsState> {
         boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
       );
 
-  // One timeline row: filled dot when done, hollow when not
-  Widget buildStep(Map<String, dynamic> st) {
+  Widget buildStep(Map<String, dynamic> st, bool isLast) {
     final done = st['done'] == true;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    final String detail = st['detail'];
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: done ? teal : Colors.transparent,
-              border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 1.5),
+          SizedBox(
+            width: 14,
+            child: Column(
+              children: [
+                const SizedBox(height: 3),
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: done ? teal : Colors.white,
+                    border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 2),
+                  ),
+                ),
+                if (!isLast) Expanded(child: Container(width: 2, color: done ? teal : const Color(0xFFD5E3E0))),
+              ],
             ),
           ),
-          const SizedBox(width: 12),
-          Text(st['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
-          const SizedBox(width: 8),
-          Flexible(child: Text(st['detail'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray))),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(st['label'], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: done ? ink : gray)),
+                  if (detail.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(detail, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 4, 0, 12),
+      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+    );
+  }
+
+  Widget buildSummary(Map<String, dynamic> r, Map<String, dynamic>? item, String s) {
+    final method = r['method'] == 'delivery' ? 'Delivery' : 'Pickup';
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: cardStyle(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ItemPhoto(item: item ?? <String, dynamic>{'image': '', 'category': ''}, width: 84, height: 84, radius: 16, iconSize: 32),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item?['name'] ?? 'Rental',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
+                const SizedBox(height: 8),
+                StatusTag(text: s, attention: s == 'Overdue'),
+                const SizedBox(height: 8),
+                Text('${AppSettings.shortDate(r['start'])} – ${AppSettings.shortDate(r['end'])} · $method',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -187,7 +248,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
       buttons.add(w);
     }
 
-    if (s == 'Active' || s == 'Overdue') add(filledButton("I've returned it", submitReturn));
+    if ((s == 'Active' || s == 'Overdue') && r['borrower'] == ActiveUser.username) add(filledButton("I've returned it", submitReturn));
     if (s == 'Completed' && !AllReviews.hasReviewed(ActiveUser.username, r['id'])) {
       add(filledButton('Rate this rental', () => Navigator.pushNamed(context, '/ratereview', arguments: r['id']).then((_) => setState(() {}))));
     }
@@ -208,6 +269,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     final started = ['Active', 'Overdue', 'Returned', 'Completed'].contains(s);
     final showChecklist = ['Approved', 'Active', 'Overdue', 'Returned', 'Completed'].contains(s);
     final showReturnNote = s == 'Active' || s == 'Overdue' || s == 'Returned';
+    final steps = buildSteps(r);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
@@ -223,19 +285,14 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Item name as the heading (the arrow now lives in the TopBar)
-                    Text(item?['name'] ?? 'Rental', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.4)),
-                    const SizedBox(height: 10),
-
-                    // Status tag + the demo date everything is measured against
-                    Row(
-                      children: [
-                        StatusTag(text: s, attention: s == 'Overdue'),
-                        const Spacer(),
-                        Text('Today (demo date): ${AppSettings.shortDate(AppSettings.demoDate)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                      ],
+                    buildSummary(r, item, s),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 2),
+                      child: Text('Today (simulated demo date): ${AppSettings.shortDate(AppSettings.demoDate)}',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
                   
                     if (s == 'Overdue') ...[
@@ -261,10 +318,15 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                     ],
 
                    
+                    buildSectionTitle('Progress'),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      padding: const EdgeInsets.all(18),
                       decoration: cardStyle(20),
-                      child: Column(children: buildSteps(r).map(buildStep).toList()),
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < steps.length; i++) buildStep(steps[i], i == steps.length - 1),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -278,6 +340,13 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                           decoration: cardStyle(16),
                           child: Row(
                             children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                                child: const Icon(Icons.receipt_long_outlined, size: 18, color: teal),
+                              ),
+                              const SizedBox(width: 12),
                               const Expanded(child: Text('Fee breakdown', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink))),
                               Text(
                                 s == 'Overdue' ? 'Late fee ${AppSettings.peso(RentalFees.lateFee(r))}' : 'Refund ${AppSettings.peso(RentalFees.depositRefund(r))}',
@@ -332,11 +401,16 @@ class RentalDetailsPage extends State<RentalDetailsState> {
               ),
             ),
 
-            // Pinned actions
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-              child: buildActions(r),
-            ),
+            if (s != 'Declined' && s != 'Cancelled')
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                ),
+                child: buildActions(r),
+              ),
           ],
         ),
       ),
