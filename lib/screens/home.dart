@@ -17,7 +17,7 @@ class HomeState extends StatefulWidget {
 
 class HomePage extends State<HomeState> {
   final TextEditingController searchCtrl = TextEditingController();
-  final List<String> categories = ['All', 'Cameras', 'Tools', 'Camping', 'Electronics'];
+  final List<String> categories = ['All', 'Cameras', 'Tools', 'Camping', 'Electronics', 'Others'];
   String selectedCategory = 'All';
   String query = '';
 
@@ -55,6 +55,8 @@ class HomePage extends State<HomeState> {
         return Icons.terrain;
       case 'Electronics':
         return Icons.headphones_outlined;
+      case 'Others':
+        return Icons.category_outlined;
       default:
         return Icons.apps;
     }

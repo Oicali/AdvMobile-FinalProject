@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
+import 'package:advmobile_finalproject/glob/alldisputes.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
+import 'package:advmobile_finalproject/glob/allwallets.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
-
 
 class ConfirmReturnState extends StatefulWidget {
   const ConfirmReturnState({super.key});
@@ -20,15 +21,15 @@ class ConfirmReturnState extends StatefulWidget {
 class ConfirmReturnPage extends State<ConfirmReturnState> {
   Map<String, dynamic>? rental;
   bool loaded = false;
-  final List<bool> checks = [false, false, false];
 
   static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
-  static const Color lateFill = Color(0xFFFDECEC);
-
+  static const Color lateFill = Color(0xFFFFE9D6);
+  static const Color lateText = Color(0xFF7A3A0B);
+  static const Color lateLine = Color(0xFFE8893A);
 
   @override
   void didChangeDependencies() {
@@ -40,17 +41,18 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
     rental = arg is String ? AllRentals.byId(arg) : null;
   }
 
-
   Future<void> confirmReturn() async {
     final r = rental!;
     r['lenderConfirmed'] = true;
     r['status'] = 'Completed';
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Return confirmed. The deposit refund is released (simulated).')));
+    final msg = !AllWallets.isWallet(r)
+        ? 'Return confirmed. Hand back the deposit in person (simulated).'
+        : (AllWallets.isSettled(r) ? 'Return confirmed. P-wallet payout released (simulated).' : 'Return confirmed. Payout waits for the open dispute (simulated).');
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     await Navigator.pushNamed(context, '/ratereview', arguments: r['id']);
     if (!mounted) return;
     Navigator.pop(context);
   }
-
 
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
@@ -107,47 +109,24 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
       decoration: BoxDecoration(
         color: lateFill,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: error, width: 1.5),
+        border: Border.all(color: lateLine, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, size: 20, color: error),
+              const Icon(Icons.warning_amber_rounded, size: 20, color: lateLine),
               const SizedBox(width: 6),
-              Text('$days ${days == 1 ? 'day' : 'days'} late', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: error)),
+              Text('$days ${days == 1 ? 'day' : 'days'} late', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: lateText)),
             ],
           ),
           const SizedBox(height: 6),
-          Text('Late fee: ${AppSettings.peso(RentalFees.lateFee(r))}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: error)),
+          Text('Late fee: ${AppSettings.peso(RentalFees.lateFee(r))}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: lateText)),
           const SizedBox(height: 2),
-          Text('Deposit refund after late fee: ${AppSettings.peso(RentalFees.depositRefund(r))}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: error)),
+          Text('Deposit refund: ${AppSettings.peso(RentalFees.depositRefund(r))}',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: lateText)),
         ],
-      ),
-    );
-  }
-
-  Widget buildCheckRow(int index, String label) {
-    final checked = checks[index];
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => checks[index] = !checked),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(color: checked ? teal : tealSoft, shape: BoxShape.circle),
-              child: Icon(Icons.check, size: 19, color: checked ? Colors.white : const Color(0xFFB5C2BF)),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink))),
-          ],
-        ),
       ),
     );
   }
@@ -183,16 +162,15 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
     final isLate = lateDays > 0;
     final days = AppSettings.daysBetween(r['start'], r['end']);
     final canConfirm = r['status'] == 'Returned' && r['lender'] == ActiveUser.username;
-    final allChecked = checks.every((c) => c);
+    final myReports = AllDisputes.forRental(r['id']).where((d) => d['filedBy'] == ActiveUser.username).toList();
     final summaryTag = returnedOn.isEmpty ? 'Not returned' : 'Returned ${AppSettings.shortDate(returnedOn)}';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: SafeArea(
-        top: false, 
+        top: false,
         child: Column(
           children: [
-
             const TopBar(title: 'Confirm return'),
             Expanded(
               child: SingleChildScrollView(
@@ -200,7 +178,6 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: cardStyle(20),
@@ -252,8 +229,6 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                       buildLateCard(r),
                       const SizedBox(height: 12),
                     ],
-
-
                     buildSectionHeader('Return summary', summaryTag),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -269,37 +244,21 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                             padding: EdgeInsets.symmetric(vertical: 6),
                             child: Divider(height: 1, color: Color(0xFFE3E8E6)),
                           ),
-                          // Final refund sits in a tinted pill so it stands out from the lines above it
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                             decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
-                            child: buildRow('Deposit refund to borrower (simulated)', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
+                            child: buildRow(r['payment'] == 'cash' ? 'Deposit to return in person (simulated)' : 'Deposit refund to P-wallet (simulated)', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 12),
-
-
                     if (canConfirm) ...[
-                      buildSectionHeader('Before you confirm', '${checks.where((c) => c).length} of ${checks.length}'),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                        decoration: cardStyle(16),
-                        child: Column(
-                          children: [
-                            buildCheckRow(0, 'The item was handed back to me'),
-                            const Divider(height: 1, color: Color(0xFFE3E8E6)),
-                            buildCheckRow(1, 'It matches the condition in the listing'),
-                            const Divider(height: 1, color: Color(0xFFE3E8E6)),
-                            buildCheckRow(2, 'There is no damage or missing part'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Confirming releases the deposit refund (simulated). If something is damaged, report it before you confirm.',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4),
+                      Text(
+                        r['payment'] == 'cash'
+                            ? 'Confirming records that the deposit was returned in person (simulated). If something is damaged, report it before you confirm.'
+                            : 'Confirming releases the P-wallet payout (simulated). If something is damaged, report it before you confirm.',
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4),
                       ),
                     ],
                     if (!canConfirm) buildEmpty(),
@@ -307,8 +266,6 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                 ),
               ),
             ),
-
-
             if (canConfirm)
               Container(
                 width: double.infinity,
@@ -325,15 +282,13 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                       height: 52,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
-                        boxShadow: allChecked ? const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))] : null,
+                        boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
                       ),
                       child: ElevatedButton(
-                        onPressed: allChecked ? confirmReturn : null,
+                        onPressed: confirmReturn,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: teal,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFFD5E3E0),
-                          disabledForegroundColor: Colors.white,
                           elevation: 0,
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
@@ -353,19 +308,19 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                       width: double.infinity,
                       height: 52,
                       child: OutlinedButton(
-                        onPressed: () => Navigator.pushNamed(context, '/reportissue', arguments: r['id']).then((_) => setState(() {})),
+                        onPressed: () => Navigator.pushNamed(context, myReports.isEmpty ? '/reportissue' : '/disputedetails', arguments: myReports.isEmpty ? r['id'] : myReports.first['id']).then((_) => setState(() {})),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: teal,
                           side: const BorderSide(color: teal, width: 1.5),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.flag_outlined, size: 19),
-                            SizedBox(width: 8),
-                            Text('Report a problem'),
+                            const Icon(Icons.flag_outlined, size: 19),
+                            const SizedBox(width: 8),
+                            Text(myReports.isEmpty ? 'Report a problem' : 'View my report · ${myReports.first['status']}'),
                           ],
                         ),
                       ),

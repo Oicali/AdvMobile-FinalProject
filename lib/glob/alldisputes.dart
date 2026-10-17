@@ -35,6 +35,11 @@ class AllDisputes {
   }
 
 
+  static bool anyOpen(String rentalId) {
+    return disputes.any((d) => d['rentalId'] == rentalId && d['status'] != 'Resolved');
+  }
+
+
   static String otherParty(Map<String, dynamic> d) {
     final r = AllRentals.byId(d['rentalId']);
     if (r == null) return '';

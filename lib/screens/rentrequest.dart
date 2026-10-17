@@ -4,6 +4,7 @@ import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allwallets.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
@@ -23,6 +24,7 @@ class RentRequestPage extends State<RentRequestState> {
   Map<String, dynamic>? item;
   String start = '';
   String end = '';
+  String payment = 'wallet';
   String method = 'pickup'; 
   String? formError; 
   bool loaded = false;
@@ -130,6 +132,10 @@ class RentRequestPage extends State<RentRequestState> {
       setState(() => formError = 'Rentals can be at most 7 days.');
       return;
     }
+    if (payment == 'wallet' && !AllWallets.canAfford(ActiveUser.username, total)) {
+      setState(() => formError = 'Not enough P-wallet balance. Top up or pay with cash.');
+      return;
+    }
     final conflict = conflictMessage();
     if (conflict != null) {
       setState(() => formError = conflict);
@@ -145,6 +151,7 @@ class RentRequestPage extends State<RentRequestState> {
       'end': end,
       'method': method,
       'address': method == 'delivery' ? addressCtrl.text.trim() : '',
+      'payment': payment,
       'status': 'Requested',
       'returnedOn': '',
       'lenderConfirmed': false,
@@ -304,6 +311,48 @@ class RentRequestPage extends State<RentRequestState> {
   }
 
 
+  Widget buildPaymentCard(String value, IconData icon, String label, String sub) {
+    final selected = payment == value;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => setState(() {
+          payment = value;
+          formError = null;
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: cardStyle(16).copyWith(
+            color: selected ? const Color(0xFFF1F8F6) : Colors.white,
+            border: Border.all(color: selected ? teal : Colors.transparent, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                child: Icon(icon, size: 19, color: teal),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                    const SizedBox(height: 2),
+                    Text(sub, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ),
+              ),
+              Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 22, color: selected ? teal : gray),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildCostRow(String label, String value, {bool bold = false}) {
     final style = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: ink);
     return Padding(
@@ -427,6 +476,11 @@ class RentRequestPage extends State<RentRequestState> {
                     ),
                   ],
                   const SizedBox(height: 18),
+
+                  buildSectionTitle('Payment method'),
+                  buildPaymentCard('wallet', Icons.account_balance_wallet_outlined, 'P-wallet (simulated)', 'Your balance ${AppSettings.peso(AllWallets.available(ActiveUser.username))}'),
+                  buildPaymentCard('cash', Icons.money, 'Cash (simulated)', 'Pay the lender in person'),
+                  const SizedBox(height: 8),
 
                   buildSectionTitle('Cost summary'),
                   Container(

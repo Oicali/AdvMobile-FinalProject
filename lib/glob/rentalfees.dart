@@ -43,6 +43,8 @@ class RentalFees {
 
   static int lateFee(Map<String, dynamic> r) => rawLateFee(r) - lateWaiver(r);
 
+  static bool capReached(Map<String, dynamic> r) => r['status'] == 'Overdue' && rawLateFee(r) >= deposit(r);
+
   static int damageDeduction(Map<String, dynamic> r) {
     int total = 0;
     for (final d in AllDisputes.forRental(r['id'])) {

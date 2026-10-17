@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/alladdresses.dart';
+import 'package:advmobile_finalproject/glob/alldisputes.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
+import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allwallets.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
@@ -65,7 +68,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
       'Your lender will check the item and confirm it. Late days stop counting as of today (${AppSettings.shortDate(AppSettings.demoDate)}).',
       "I've returned it",
     );
-    if (!ok) return;
+    if (!ok || !mounted) return;
     setState(() {
       r['returnedOn'] = AppSettings.demoDate;
       r['status'] = 'Returned';
@@ -77,7 +80,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
   // Withdraw a pending request, then leave this screen
   Future<void> cancelRequest() async {
     final ok = await confirm('Cancel this request?', 'Your request will be withdrawn.', 'Cancel request', danger: true);
-    if (!ok) return;
+    if (!ok || !mounted) return;
     rental!['status'] = 'Cancelled';
     Navigator.pop(context);
   }
@@ -88,6 +91,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     final started = ['Active', 'Overdue', 'Returned', 'Completed'].contains(s);
     final approved = started || s == 'Approved';
     final returned = s == 'Returned' || s == 'Completed';
+    final closed = s == 'Completed' && (r['returnedOn'] as String).isEmpty;
     final confirmed = r['lenderConfirmed'] == true;
     final start = AppSettings.shortDate(r['start']);
 
@@ -105,11 +109,13 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     steps.addAll([
       {'label': 'Approved', 'detail': '', 'done': approved},
       {'label': r['method'] == 'delivery' ? 'Delivered' : 'Picked up', 'detail': started ? start : 'Starts $start', 'done': started},
-      {'label': 'Returned by you', 'detail': returned ? AppSettings.shortDate(r['returnedOn']) : 'Due ${AppSettings.shortDate(r['end'])}', 'done': returned},
+      {'label': closed ? 'Not returned' : 'Returned by you', 'detail': closed ? 'Closed by lender' : (returned ? AppSettings.shortDate(r['returnedOn']) : 'Due ${AppSettings.shortDate(r['end'])}'), 'done': returned},
       {'label': 'Confirmed by lender', 'detail': confirmed ? 'Done' : 'Pending', 'done': confirmed},
     ]);
     return steps;
   }
+
+  String paymentLabel(Map<String, dynamic> r) => r['payment'] == 'cash' ? 'Cash (simulated)' : 'P-wallet (simulated)';
 
   String pickupAddress(Map<String, dynamic> r) {
     final list = AllAddresses.ownedBy(r['lender']);
@@ -271,7 +277,12 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     }
     if (s == 'Requested') add(outlinedButton('Cancel request', cancelRequest));
     if (['Approved', 'Active', 'Overdue', 'Returned', 'Completed'].contains(s)) {
-      add(outlinedButton('Report an issue', () => Navigator.pushNamed(context, '/reportissue', arguments: r['id']).then((_) => setState(() {}))));
+      final mine = AllDisputes.forRental(r['id']).where((d) => d['filedBy'] == ActiveUser.username).toList();
+      if (mine.isEmpty) {
+        add(outlinedButton('Report an issue', () => Navigator.pushNamed(context, '/reportissue', arguments: r['id']).then((_) => setState(() {}))));
+      } else {
+        add(outlinedButton('View my report · ${mine.first['status']}', () => Navigator.pushNamed(context, '/disputedetails', arguments: mine.first['id']).then((_) => setState(() {}))));
+      }
     }
     return Column(children: buttons);
   }
@@ -338,6 +349,36 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                       const SizedBox(height: 12),
                     ],
 
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: cardStyle(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                            child: const Icon(Icons.person_outline, size: 18, color: teal),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Lender', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
+                                const SizedBox(height: 1),
+                                Text(AllUsers.byUsername(r['lender'])?['fullname'] ?? r['lender'],
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                                const SizedBox(height: 2),
+                                Text('@${r['lender']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     if (r['method'] == 'pickup' && ['Approved', 'Active', 'Overdue'].contains(s)) ...[
                       Container(
                         width: double.infinity,
@@ -367,6 +408,37 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                       ),
                       const SizedBox(height: 16),
                     ],
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: cardStyle(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                            child: Icon(r['payment'] == 'cash' ? Icons.money : Icons.account_balance_wallet_outlined, size: 18, color: teal),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Payment method', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
+                                const SizedBox(height: 1),
+                                Text(paymentLabel(r), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                                if (AllWallets.stateOf(r).isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(AllWallets.stateOf(r), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: teal)),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     buildSectionTitle('Progress'),
                     Container(
                       padding: const EdgeInsets.all(18),

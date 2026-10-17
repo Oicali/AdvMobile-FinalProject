@@ -3,6 +3,7 @@ import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allwallets.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
@@ -179,6 +180,69 @@ class ProfilePage extends State<ProfileState> {
     );
   }
 
+  Widget buildTopUp(String label, int amount) {
+    return Expanded(
+      child: SizedBox(
+        height: 42,
+        child: ElevatedButton(
+          onPressed: () => setState(() => AllWallets.topUp(ActiveUser.username, amount)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: teal,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: const StadiumBorder(),
+            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          ),
+          child: Text(label),
+        ),
+      ),
+    );
+  }
+
+  Widget buildWalletCard() {
+    final me = ActiveUser.username;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: cardStyle(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                child: const Icon(Icons.account_balance_wallet_outlined, size: 19, color: teal),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('P-wallet (simulated)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: gray)),
+                    const SizedBox(height: 1),
+                    Text(AppSettings.peso(AllWallets.available(me)), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text('Held for open rentals ${AppSettings.peso(AllWallets.held(me))}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              buildTopUp('+₱1,000', 1000),
+              const SizedBox(width: 8),
+              buildTopUp('+₱5,000', 5000),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget buildMenuRow(IconData icon, String label, String route) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -300,7 +364,10 @@ class ProfilePage extends State<ProfileState> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Menu rows: own profile only
+                    if (isOwn) ...[
+                      buildWalletCard(),
+                      const SizedBox(height: 12),
+                    ],
                     if (isOwn) ...[
                       const Padding(
                         padding: EdgeInsets.fromLTRB(2, 8, 0, 12),
