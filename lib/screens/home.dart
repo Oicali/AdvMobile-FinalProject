@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
-import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
@@ -215,6 +215,7 @@ class HomePage extends State<HomeState> {
 
   @override
   Widget build(BuildContext context) {
+    AllRentals.syncStatuses();
     final items = visibleItems;
 
     return Scaffold(

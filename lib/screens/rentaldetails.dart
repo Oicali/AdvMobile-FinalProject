@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
+import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
@@ -21,9 +22,7 @@ class RentalDetailsState extends StatefulWidget {
 class RentalDetailsPage extends State<RentalDetailsState> {
   Map<String, dynamic>? rental;
   bool loaded = false;
-  // Condition checklist is visual only (no data key for it); resets when you leave
-  final List<bool> checks = [true, true, false];
-  final List<String> checkLabels = ['Item matches its description', 'Accessories and charger included', 'Photos taken at return'];
+
 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
@@ -112,7 +111,13 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     return steps;
   }
 
-  // White rounded card style
+  String pickupAddress(Map<String, dynamic> r) {
+    final list = AllAddresses.ownedBy(r['lender']);
+    if (list.isEmpty) return 'Lender will share the pickup location';
+    final a = list.firstWhere((x) => x['isDefault'] == true, orElse: () => list.first);
+    return '${a['street']}, ${a['barangay']}, ${a['city']}';
+  }
+
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
@@ -279,7 +284,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     final item = AllItems.byId(r['itemId']);
     final String s = r['status'];
     final started = ['Active', 'Overdue', 'Returned', 'Completed'].contains(s);
-    final showChecklist = ['Approved', 'Active', 'Overdue', 'Returned', 'Completed'].contains(s);
+
     final showReturnNote = s == 'Active' || s == 'Overdue' || s == 'Returned';
     final steps = buildSteps(r);
 
@@ -333,7 +338,35 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                       const SizedBox(height: 12),
                     ],
 
-                    // Progress timeline
+                    if (r['method'] == 'pickup' && ['Approved', 'Active', 'Overdue'].contains(s)) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: cardStyle(16),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                              child: const Icon(Icons.location_on_outlined, size: 18, color: teal),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Pickup address', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray)),
+                                  const SizedBox(height: 1),
+                                  Text(pickupAddress(r), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     buildSectionTitle('Progress'),
                     Container(
                       padding: const EdgeInsets.all(18),
@@ -372,49 +405,6 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                               const Icon(Icons.chevron_right, size: 18, color: gray),
                             ],
                           ),
-                        ),
-                      ),
-
-                    // Condition checklist card (round check circles, same style as Confirm return)
-                    if (showChecklist)
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
-                        decoration: cardStyle(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title with a "x of 3" progress count
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('Condition checklist', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
-                                Text('${checks.where((c) => c).length} of ${checks.length}',
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            ...List.generate(checks.length, (i) {
-                              return InkWell(
-                                onTap: () => setState(() => checks[i] = !checks[i]),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      // Round check: filled teal when ticked
-                                      Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(color: checks[i] ? teal : tealSoft, shape: BoxShape.circle),
-                                        child: Icon(Icons.check, size: 19, color: checks[i] ? Colors.white : const Color(0xFFB5C2BF)),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(child: Text(checkLabels[i], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink))),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }),
-                          ],
                         ),
                       ),
 

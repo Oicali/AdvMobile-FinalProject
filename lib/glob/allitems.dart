@@ -36,7 +36,7 @@ class AllItems {
 
   static Map<String, dynamic>? currentRental(String itemId) {
     for (final r in AllRentals.rentals) {
-      if (r['itemId'] == itemId && (r['status'] == 'Active' || r['status'] == 'Overdue')) return r;
+      if (r['itemId'] == itemId && (r['status'] == 'Active' || r['status'] == 'Overdue' || r['status'] == 'Returned')) return r;
     }
     return null;
   }
@@ -46,6 +46,7 @@ class AllItems {
     final r = currentRental(itemId);
     if (r == null) return 'Available';
     if (r['status'] == 'Overdue') return 'Unavailable';
+    if (r['status'] == 'Returned') return 'Awaiting check';
     return 'Back ${AppSettings.shortDate(r['end'])}';
   }
 

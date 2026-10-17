@@ -66,6 +66,13 @@ class RentRequestPage extends State<RentRequestState> {
   int get deposit => item!['deposit'] as int;
   int get total => rentalFee + deliveryFee + deposit;
 
+  String pickupArea() {
+    final list = AllAddresses.ownedBy(item!['owner']);
+    if (list.isEmpty) return 'Lender will share the pickup location';
+    final a = list.firstWhere((x) => x['isDefault'] == true, orElse: () => list.first);
+    return '${a['barangay']}, ${a['city']}';
+  }
+
 
   DateTime local(String ymd) {
     final d = AppSettings.toDate(ymd);
@@ -79,7 +86,7 @@ class RentRequestPage extends State<RentRequestState> {
       context: context,
       initialDate: local(isStart ? start : end),
       firstDate: local(first),
-      lastDate: local(AppSettings.addDays(AppSettings.demoDate, 365)),
+      lastDate: local(isStart ? AppSettings.addDays(AppSettings.demoDate, 365) : AppSettings.addDays(start, 7)),
     );
     if (picked == null) return;
 
@@ -87,7 +94,11 @@ class RentRequestPage extends State<RentRequestState> {
       formError = null;
       if (isStart) {
         start = AppSettings.fromDate(picked);
-        if (end.compareTo(start) <= 0) end = AppSettings.addDays(start, 1);
+        if (end.compareTo(start) <= 0) {
+          end = AppSettings.addDays(start, 1);
+        } else if (AppSettings.daysBetween(start, end) > 7) {
+          end = AppSettings.addDays(start, 7);
+        }
       } else {
         end = AppSettings.fromDate(picked);
       }
@@ -100,9 +111,9 @@ class RentRequestPage extends State<RentRequestState> {
       if (r['itemId'] != item!['id']) continue;
       final s = r['status'];
       if (s == 'Overdue') return "This item hasn't been returned yet.";
+      if (s == 'Returned') return 'This item is waiting for the lender to confirm its return.';
       final blocks = s == 'Approved' || s == 'Active' || (s == 'Requested' && r['borrower'] == ActiveUser.username);
-      // Strict compare so a same-day handoff (one ends, one starts) is allowed
-      if (blocks && start.compareTo(r['end']) < 0 && end.compareTo(r['start']) > 0) {
+      if (blocks && start.compareTo(r['end']) <= 0 && end.compareTo(r['start']) >= 0) {
         return 'Those dates overlap another rental (${AppSettings.shortDate(r['start'])} to ${AppSettings.shortDate(r['end'])}).';
       }
     }
@@ -113,6 +124,10 @@ class RentRequestPage extends State<RentRequestState> {
   void sendRequest() {
     if (method == 'delivery' && addressCtrl.text.trim().isEmpty) {
       setState(() => formError = 'Enter a delivery address.');
+      return;
+    }
+    if (days > 7) {
+      setState(() => formError = 'Rentals can be at most 7 days.');
       return;
     }
     final conflict = conflictMessage();
@@ -395,7 +410,7 @@ class RentRequestPage extends State<RentRequestState> {
                   const SizedBox(height: 22),
 
                   buildSectionTitle('Get the item'),
-                  buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free'),
+                  buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free · ${pickupArea()}'),
                   buildMethodCard('delivery', Icons.local_shipping_outlined, 'Deliver to me', AppSettings.peso(AppSettings.deliveryFee)),
 
                   // Delivery address only when delivery is chosen

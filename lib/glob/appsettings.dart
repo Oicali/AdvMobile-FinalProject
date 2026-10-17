@@ -2,7 +2,7 @@
 
 
 class AppSettings {
-  static String demoDate = '2026-10-07';
+  static String demoDate = '2026-10-17';
   static int deliveryFee = 80;
   static int lateFeeMultiplier = 1;
 

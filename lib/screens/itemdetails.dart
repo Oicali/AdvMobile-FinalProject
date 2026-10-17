@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
+import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allsaved.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
@@ -29,6 +30,7 @@ class ItemDetailsPage extends State<ItemDetailsState> {
     final r = AllItems.currentRental(itemId);
     if (r == null) return 'Available now';
     if (r['status'] == 'Overdue') return 'Available once it is returned';
+    if (r['status'] == 'Returned') return 'Available once the lender confirms the return';
     return 'Available from ${AppSettings.shortDate(r['end'])}';
   }
 
@@ -95,12 +97,15 @@ class ItemDetailsPage extends State<ItemDetailsState> {
       return const Scaffold(body: Center(child: Text('Item not found.')));
     }
 
+    AllRentals.syncStatuses();
     final id = item['id'] as String;
     final owner = AllUsers.byUsername(item['owner']);
     final rating = AllReviews.averageFor(item['owner'], 'lender');
     final availability = AllItems.availabilityOf(id);
     final isMine = item['owner'] == ActiveUser.username;
     final saved = AllSaved.isSaved(ActiveUser.username, id);
+    final current = AllItems.currentRental(id);
+    final blocked = current != null && (current['status'] == 'Overdue' || current['status'] == 'Returned');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
@@ -279,19 +284,21 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                       height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
-                        boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                        boxShadow: blocked ? null : const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
                       ),
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pushNamed(context, '/rentrequest', arguments: id).then((_) => setState(() {})),
+                        onPressed: blocked ? null : () => Navigator.pushNamed(context, '/rentrequest', arguments: id).then((_) => setState(() {})),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: teal,
                           foregroundColor: Colors.white,
+                          disabledBackgroundColor: const Color(0xFFD5E3E0),
+                          disabledForegroundColor: gray,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
                         ),
-                        child: const Text('Request to rent'),
+                        child: Text(blocked ? 'Not available yet' : 'Request to rent'),
                       ),
                     ),
                   ],
