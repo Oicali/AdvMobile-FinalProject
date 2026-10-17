@@ -1,47 +1,41 @@
-// Core Flutter material widgets
 import 'package:flutter/material.dart';
-import 'screens/login.dart';
-import 'screens/register.dart';
-import 'screens/addeditaddress.dart';
-import 'screens/profile.dart';
-import 'screens/editprofile.dart';
-import 'screens/accountcreated.dart';
-import 'screens/itemdetails.dart';
-import 'screens/rentrequest.dart';
-import 'screens/mylistings.dart';
-import 'screens/postedititem.dart';
-import 'screens/incomingrequests.dart';
-import 'screens/myrentals.dart';
-import 'screens/rentaldetails.dart';
-import 'screens/feebreakdown.dart';
-import 'screens/saveditems.dart';
-import 'screens/myaddresses.dart';
-import 'screens/reportissue.dart';
-import 'screens/disputedetails.dart';
-import 'screens/myreports.dart';
-import 'screens/home.dart';
-import 'screens/demomenu.dart';
-import 'screens/confirmreturn.dart';
-import 'screens/splash.dart';
-import 'screens/ratereview.dart';
+import 'package:advmobile_finalproject/screens/login.dart';
+import 'package:advmobile_finalproject/screens/register.dart';
+import 'package:advmobile_finalproject/screens/addeditaddress.dart';
+import 'package:advmobile_finalproject/screens/profile.dart';
+import 'package:advmobile_finalproject/screens/editprofile.dart';
+import 'package:advmobile_finalproject/screens/accountcreated.dart';
+import 'package:advmobile_finalproject/screens/itemdetails.dart';
+import 'package:advmobile_finalproject/screens/rentrequest.dart';
+import 'package:advmobile_finalproject/screens/mylistings.dart';
+import 'package:advmobile_finalproject/screens/postedititem.dart';
+import 'package:advmobile_finalproject/screens/incomingrequests.dart';
+import 'package:advmobile_finalproject/screens/myrentals.dart';
+import 'package:advmobile_finalproject/screens/rentaldetails.dart';
+import 'package:advmobile_finalproject/screens/feebreakdown.dart';
+import 'package:advmobile_finalproject/screens/saveditems.dart';
+import 'package:advmobile_finalproject/screens/myaddresses.dart';
+import 'package:advmobile_finalproject/screens/reportissue.dart';
+import 'package:advmobile_finalproject/screens/disputedetails.dart';
+import 'package:advmobile_finalproject/screens/myreports.dart';
+import 'package:advmobile_finalproject/screens/home.dart';
+import 'package:advmobile_finalproject/screens/demomenu.dart';
+import 'package:advmobile_finalproject/screens/confirmreturn.dart';
+import 'package:advmobile_finalproject/screens/splash.dart';
+import 'package:advmobile_finalproject/screens/ratereview.dart';
 
-// App entry point
 void main() {
-  runApp(MyFirstApp());
+  runApp(PahiramApp());
 }
 
-// Root widget: holds theme and named routes
-class MyFirstApp extends StatelessWidget {
-  //constructor
-  const MyFirstApp({super.key});
+class PahiramApp extends StatelessWidget {
+  const PahiramApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // First screen shown on launch
       initialRoute: "/splash",
 
-      // Named routes used by Navigator.pushNamed
       routes: {
 
         "/login": (context) => LoginState(),
@@ -70,7 +64,6 @@ class MyFirstApp extends StatelessWidget {
         "/ratereview": (context) => RateReviewState(),
       },
 
-      // App name + teal theme + Plus Jakarta Sans font app-wide
       title: "Pahiram",
       theme: ThemeData(
         fontFamily: 'PlusJakartaSans',

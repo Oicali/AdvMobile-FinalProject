@@ -57,6 +57,7 @@ class RateReviewPage extends State<RateReviewState> {
 
   void submit() {
     final r = rental!;
+    if (AllReviews.hasReviewed(ActiveUser.username, r['id'])) return;
     AllReviews.reviews.add({
       'id': 'v${AllReviews.reviews.length + 1}',
       'rentalId': r['id'],
@@ -66,7 +67,9 @@ class RateReviewPage extends State<RateReviewState> {
       'score': score,
       'comment': commentCtrl.text.trim(),
     });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Thanks for your review.')));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Thanks for your review.')));
     Navigator.pop(context);
   }
 
@@ -139,7 +142,6 @@ class RateReviewPage extends State<RateReviewState> {
           onTap: () => setState(() => score = i + 1),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            // Selected stars turn gold and grow slightly
             child: AnimatedScale(
               scale: on ? 1.12 : 1.0,
               duration: const Duration(milliseconds: 150),

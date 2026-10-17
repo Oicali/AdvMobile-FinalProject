@@ -36,7 +36,7 @@ class AllItems {
 
   static Map<String, dynamic>? currentRental(String itemId) {
     for (final r in AllRentals.rentals) {
-      if (r['itemId'] == itemId && (r['status'] == 'Active' || r['status'] == 'Overdue')) return r;
+      if (r['itemId'] == itemId && (r['status'] == 'Active' || r['status'] == 'Overdue' || r['status'] == 'Returned')) return r;
     }
     return null;
   }
@@ -45,11 +45,12 @@ class AllItems {
   static String availabilityOf(String itemId) {
     final r = currentRental(itemId);
     if (r == null) return 'Available';
-    if (r['status'] == 'Overdue') return 'Unavailable';
+    if (r['status'] == 'Overdue') return 'Not returned yet';
+    if (r['status'] == 'Returned') return 'Awaiting check';
     return 'Back ${AppSettings.shortDate(r['end'])}';
   }
 
-  static int nextNumber = 8;
+  static int nextNumber = 9;
 
   static List<String> gallery = [
     'assets/images/i1.jpg',
@@ -71,7 +72,7 @@ class AllItems {
   }
 
   static bool isLocked(String itemId) {
-    return AllRentals.rentals.any((r) => r['itemId'] == itemId && (r['status'] == 'Approved' || r['status'] == 'Active' || r['status'] == 'Overdue'));
+    return AllRentals.rentals.any((r) => r['itemId'] == itemId && (r['status'] == 'Approved' || r['status'] == 'Active' || r['status'] == 'Overdue' || r['status'] == 'Returned'));
   }
 
  

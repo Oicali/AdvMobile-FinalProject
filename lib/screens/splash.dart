@@ -57,7 +57,7 @@ class SplashPage extends State<SplashState> {
                       AppLogo(size: 180),
                       SizedBox(height: 14),
                       Text(
-                        'Borrow what you need. Lend what you don\'t use.',
+                        'Lend what you don\'t use.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: teal),
                       ),

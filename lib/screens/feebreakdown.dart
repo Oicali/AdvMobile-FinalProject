@@ -61,6 +61,8 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
 
   Widget buildHero(Map<String, dynamic> r) {
     final released = r['lenderConfirmed'] == true;
+    final cash = r['payment'] == 'cash';
+    final closed = r['status'] == 'Completed' && (r['returnedOn'] as String).isEmpty;
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
@@ -87,13 +89,13 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                 Text(AppSettings.peso(RentalFees.depositRefund(r)),
                     style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
                 const SizedBox(height: 10),
-                Text(released ? 'The refund has been released.' : 'Released after the lender confirms the return.',
+                Text(closed ? 'The item was not returned. The lender keeps the deposit.' : cash ? 'Handed back by the lender in person.' : (released ? 'The refund has been released.' : 'Released after the lender confirms the return.'),
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFFD6ECE6), height: 1.4)),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: const Color(0x33FFFFFF), borderRadius: BorderRadius.circular(999)),
-                  child: const Text('Simulated refund', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                  child: Text(closed ? 'Closed as not returned (simulated)' : cash ? 'Settled in person (simulated)' : 'Simulated refund', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
                 ),
               ],
             ),
@@ -146,6 +148,8 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                           if (delivery > 0) buildRow('Delivery fee', AppSettings.peso(delivery)),
                           buildRow('Late fee ($lateDays ${lateDays == 1 ? 'day' : 'days'} × ${AppSettings.peso(perDay)})', AppSettings.peso(late), valueColor: late > 0 ? warn : null),
                           buildRow('Damage deduction', AppSettings.peso(damage)),
+                          buildDivider(),
+                          buildRow('Paid with', r['payment'] == 'cash' ? 'Cash (simulated)' : 'P-wallet (simulated)'),
                         ],
                       ),
                     ),

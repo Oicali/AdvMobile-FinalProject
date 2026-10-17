@@ -4,6 +4,7 @@ import 'package:advmobile_finalproject/glob/alladdresses.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allwallets.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
@@ -23,6 +24,7 @@ class RentRequestPage extends State<RentRequestState> {
   Map<String, dynamic>? item;
   String start = '';
   String end = '';
+  String payment = 'wallet';
   String method = 'pickup'; 
   String? formError; 
   bool loaded = false;
@@ -66,6 +68,13 @@ class RentRequestPage extends State<RentRequestState> {
   int get deposit => item!['deposit'] as int;
   int get total => rentalFee + deliveryFee + deposit;
 
+  String pickupArea() {
+    final list = AllAddresses.ownedBy(item!['owner']);
+    if (list.isEmpty) return 'Lender will share the pickup location';
+    final a = list.firstWhere((x) => x['isDefault'] == true, orElse: () => list.first);
+    return '${a['barangay']}, ${a['city']}';
+  }
+
 
   DateTime local(String ymd) {
     final d = AppSettings.toDate(ymd);
@@ -79,7 +88,7 @@ class RentRequestPage extends State<RentRequestState> {
       context: context,
       initialDate: local(isStart ? start : end),
       firstDate: local(first),
-      lastDate: local(AppSettings.addDays(AppSettings.demoDate, 365)),
+      lastDate: local(isStart ? AppSettings.addDays(AppSettings.demoDate, 365) : AppSettings.addDays(start, 7)),
     );
     if (picked == null) return;
 
@@ -87,7 +96,11 @@ class RentRequestPage extends State<RentRequestState> {
       formError = null;
       if (isStart) {
         start = AppSettings.fromDate(picked);
-        if (end.compareTo(start) <= 0) end = AppSettings.addDays(start, 1);
+        if (end.compareTo(start) <= 0) {
+          end = AppSettings.addDays(start, 1);
+        } else if (AppSettings.daysBetween(start, end) > 7) {
+          end = AppSettings.addDays(start, 7);
+        }
       } else {
         end = AppSettings.fromDate(picked);
       }
@@ -100,9 +113,9 @@ class RentRequestPage extends State<RentRequestState> {
       if (r['itemId'] != item!['id']) continue;
       final s = r['status'];
       if (s == 'Overdue') return "This item hasn't been returned yet.";
+      if (s == 'Returned') return 'This item is waiting for the lender to confirm its return.';
       final blocks = s == 'Approved' || s == 'Active' || (s == 'Requested' && r['borrower'] == ActiveUser.username);
-      // Strict compare so a same-day handoff (one ends, one starts) is allowed
-      if (blocks && start.compareTo(r['end']) < 0 && end.compareTo(r['start']) > 0) {
+      if (blocks && start.compareTo(r['end']) <= 0 && end.compareTo(r['start']) >= 0) {
         return 'Those dates overlap another rental (${AppSettings.shortDate(r['start'])} to ${AppSettings.shortDate(r['end'])}).';
       }
     }
@@ -113,6 +126,14 @@ class RentRequestPage extends State<RentRequestState> {
   void sendRequest() {
     if (method == 'delivery' && addressCtrl.text.trim().isEmpty) {
       setState(() => formError = 'Enter a delivery address.');
+      return;
+    }
+    if (days > 7) {
+      setState(() => formError = 'Rentals can be at most 7 days.');
+      return;
+    }
+    if (payment == 'wallet' && !AllWallets.canAfford(ActiveUser.username, total)) {
+      setState(() => formError = 'Not enough P-wallet balance. Top up or pay with cash.');
       return;
     }
     final conflict = conflictMessage();
@@ -130,6 +151,7 @@ class RentRequestPage extends State<RentRequestState> {
       'end': end,
       'method': method,
       'address': method == 'delivery' ? addressCtrl.text.trim() : '',
+      'payment': payment,
       'status': 'Requested',
       'returnedOn': '',
       'lenderConfirmed': false,
@@ -289,6 +311,48 @@ class RentRequestPage extends State<RentRequestState> {
   }
 
 
+  Widget buildPaymentCard(String value, IconData icon, String label, String sub) {
+    final selected = payment == value;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => setState(() {
+          payment = value;
+          formError = null;
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: cardStyle(16).copyWith(
+            color: selected ? const Color(0xFFF1F8F6) : Colors.white,
+            border: Border.all(color: selected ? teal : Colors.transparent, width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
+                child: Icon(icon, size: 19, color: teal),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ink)),
+                    const SizedBox(height: 2),
+                    Text(sub, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                  ],
+                ),
+              ),
+              Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 22, color: selected ? teal : gray),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget buildCostRow(String label, String value, {bool bold = false}) {
     final style = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: ink);
     return Padding(
@@ -395,7 +459,7 @@ class RentRequestPage extends State<RentRequestState> {
                   const SizedBox(height: 22),
 
                   buildSectionTitle('Get the item'),
-                  buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free'),
+                  buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free · ${pickupArea()}'),
                   buildMethodCard('delivery', Icons.local_shipping_outlined, 'Deliver to me', AppSettings.peso(AppSettings.deliveryFee)),
 
                   // Delivery address only when delivery is chosen
@@ -412,6 +476,11 @@ class RentRequestPage extends State<RentRequestState> {
                     ),
                   ],
                   const SizedBox(height: 18),
+
+                  buildSectionTitle('Payment method'),
+                  buildPaymentCard('wallet', Icons.account_balance_wallet_outlined, 'P-wallet (simulated)', 'Your balance ${AppSettings.peso(AllWallets.available(ActiveUser.username))}'),
+                  buildPaymentCard('cash', Icons.money, 'Cash (simulated)', 'Pay the lender in person'),
+                  const SizedBox(height: 8),
 
                   buildSectionTitle('Cost summary'),
                   Container(

@@ -86,8 +86,8 @@ class ReportIssuePage extends State<ReportIssueState> {
         if (amount <= 0) errors['form'] = 'There is no charge on this rental to dispute.';
       }
 
-      if (errors.isEmpty && AllDisputes.hasOpen(ActiveUser.username, r['id'])) {
-        errors['form'] = 'You already have an open report on this rental. Find it under Profile > My reports.';
+      if (errors.isEmpty && AllDisputes.forRental(r['id']).any((d) => d['filedBy'] == ActiveUser.username)) {
+        errors['form'] = 'You already filed a report on this rental. Find it under Profile > My reports.';
       }
     });
     if (errors.isNotEmpty) return;

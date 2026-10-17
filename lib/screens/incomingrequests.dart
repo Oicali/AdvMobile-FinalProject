@@ -7,7 +7,7 @@ import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
-import 'package:advmobile_finalproject/widgets/statustag.dart';
+
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 
 class IncomingRequestsState extends StatefulWidget {
@@ -30,7 +30,8 @@ class IncomingRequestsPage extends State<IncomingRequestsState> {
       if (o['id'] == r['id'] || o['itemId'] != r['itemId']) continue;
       final s = o['status'];
       if (s == 'Overdue') return "This item hasn't been returned yet.";
-      if ((s == 'Approved' || s == 'Active') && (r['start'] as String).compareTo(o['end']) < 0 && (r['end'] as String).compareTo(o['start']) > 0) {
+      if (s == 'Returned') return 'This item is waiting for you to confirm its return.';
+      if ((s == 'Approved' || s == 'Active') && (r['start'] as String).compareTo(o['end']) <= 0 && (r['end'] as String).compareTo(o['start']) >= 0) {
         return 'Overlaps another rental (${AppSettings.shortDate(o['start'])} to ${AppSettings.shortDate(o['end'])}).';
       }
     }

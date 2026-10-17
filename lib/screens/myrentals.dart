@@ -93,6 +93,7 @@ class MyRentalsPage extends State<MyRentalsState> {
       case 'Returned':
         return ['Returned $returned · Waiting for lender to confirm'];
       case 'Completed':
+        if ((r['returnedOn'] as String).isEmpty) return ['Closed as not returned · Deposit refund ${AppSettings.peso(RentalFees.depositRefund(r))}'];
         return ['Returned $returned · Deposit refund ${AppSettings.peso(RentalFees.depositRefund(r))}'];
       case 'Declined':
         return ['Declined by owner · $range'];

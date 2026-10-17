@@ -20,7 +20,7 @@ class PostEditItemPage extends State<PostEditItemState> {
   final TextEditingController depositCtrl = TextEditingController();
   final TextEditingController descCtrl = TextEditingController();
 
-  final List<String> categories = ['Cameras', 'Tools', 'Camping', 'Electronics'];
+  final List<String> categories = ['Cameras', 'Tools', 'Camping', 'Electronics', 'Others'];
   final List<String> conditions = ['Like new', 'Good', 'Fair'];
   String category = 'Cameras';
   String condition = 'Good';

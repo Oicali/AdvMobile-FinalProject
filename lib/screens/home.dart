@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
-import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
@@ -17,7 +17,7 @@ class HomeState extends StatefulWidget {
 
 class HomePage extends State<HomeState> {
   final TextEditingController searchCtrl = TextEditingController();
-  final List<String> categories = ['All', 'Cameras', 'Tools', 'Camping', 'Electronics'];
+  final List<String> categories = ['All', 'Cameras', 'Tools', 'Camping', 'Electronics', 'Others'];
   String selectedCategory = 'All';
   String query = '';
 
@@ -55,6 +55,8 @@ class HomePage extends State<HomeState> {
         return Icons.terrain;
       case 'Electronics':
         return Icons.headphones_outlined;
+      case 'Others':
+        return Icons.category_outlined;
       default:
         return Icons.apps;
     }
@@ -215,6 +217,7 @@ class HomePage extends State<HomeState> {
 
   @override
   Widget build(BuildContext context) {
+    AllRentals.syncStatuses();
     final items = visibleItems;
 
     return Scaffold(

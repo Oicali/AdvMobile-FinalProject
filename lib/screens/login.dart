@@ -97,7 +97,7 @@ class LoginPage extends State<LoginState> {
                   // Logo sits directly on the mint
                   const AppLogo(size: 120),
                   const SizedBox(height: 16),
-                  const Text("Borrow what you need. Lend what you don't use.",
+                  const Text("Lend what you don't use.",
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: ink)),
                   const SizedBox(height: 14),

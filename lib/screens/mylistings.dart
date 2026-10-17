@@ -4,7 +4,9 @@ import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allrentals.dart';
 import 'package:advmobile_finalproject/glob/allreviews.dart';
 import 'package:advmobile_finalproject/glob/allsaved.dart';
+import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/glob/appsettings.dart';
+import 'package:advmobile_finalproject/glob/rentalfees.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/statustag.dart';
@@ -87,6 +89,34 @@ class MyListingsPage extends State<MyListingsState> {
     return null;
   }
 
+  Map<String, dynamic>? closable(String itemId) {
+    for (final r in AllRentals.rentals) {
+      if (r['itemId'] == itemId && r['lender'] == ActiveUser.username && RentalFees.capReached(r)) return r;
+    }
+    return null;
+  }
+
+  Future<void> closeNotReturned(Map<String, dynamic> r) async {
+    final amount = AppSettings.peso(RentalFees.deposit(r));
+    final where = r['payment'] == 'cash' ? 'stays with you (simulated)' : 'is paid to your P-wallet (simulated)';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Close as not returned?'),
+        content: Text('The borrower loses the full deposit of $amount. It $where. This cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Not yet')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Close rental', style: TextStyle(color: error))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() {
+      r['status'] = 'Completed';
+      r['lenderConfirmed'] = true;
+    });
+  }
+
   Map<String, dynamic>? awaitingRating(String itemId) {
     for (final r in AllRentals.rentals) {
       if (r['itemId'] == itemId && r['lender'] == ActiveUser.username && r['status'] == 'Completed' && !AllReviews.hasReviewed(ActiveUser.username, r['id'])) return r;
@@ -97,10 +127,12 @@ class MyListingsPage extends State<MyListingsState> {
 
   Widget buildListing(Map<String, dynamic> item) {
     final id = item['id'] as String;
-    final rented = AllItems.currentRental(id) != null;
+    final current = AllItems.currentRental(id);
+    final rented = current != null;
     final locked = AllItems.isLocked(id);
     final waiting = awaitingReturn(id);
     final toRate = awaitingRating(id);
+    final toClose = closable(id);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -126,6 +158,11 @@ class MyListingsPage extends State<MyListingsState> {
                 const SizedBox(height: 4),
                 Text('${AppSettings.peso(item['dailyRate'])} / day · Deposit ${AppSettings.peso(item['deposit'])}',
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                if (current != null) ...[
+                  const SizedBox(height: 4),
+                  Text('Rented by ${AllUsers.byUsername(current['borrower'])?['fullname'] ?? current['borrower']} · ${AppSettings.shortDate(current['start'])} – ${AppSettings.shortDate(current['end'])}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                ],
                 const SizedBox(height: 10),
 
                 Wrap(
@@ -140,6 +177,11 @@ class MyListingsPage extends State<MyListingsState> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: buildPill('Confirm return', () => Navigator.pushNamed(context, '/confirmreturn', arguments: waiting['id']).then((_) => setState(() {}))),
+                  ),
+                if (toClose != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: buildPill('Close as not returned', () => closeNotReturned(toClose), icon: Icons.block, color: error),
                   ),
                 if (toRate != null)
                   Padding(
