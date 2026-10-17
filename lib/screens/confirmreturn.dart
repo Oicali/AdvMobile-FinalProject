@@ -159,6 +159,7 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
     final borrowerName = (AllUsers.byUsername(r['borrower'])?['fullname'] ?? r['borrower']).toString();
     final returnedOn = r['returnedOn'] as String;
     final lateDays = RentalFees.daysLate(r);
+    final damage = RentalFees.damageDeduction(r);
     final isLate = lateDays > 0;
     final days = AppSettings.daysBetween(r['start'], r['end']);
     final canConfirm = r['status'] == 'Returned' && r['lender'] == ActiveUser.username;
@@ -239,6 +240,7 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                           buildRow('Returned on', returnedOn.isEmpty ? 'Not returned yet' : AppSettings.longDate(returnedOn)),
                           buildRow('Days late', '$lateDays'),
                           buildRow('Late fee', AppSettings.peso(RentalFees.lateFee(r))),
+                          if (damage > 0) buildRow('Damage deduction', '− ${AppSettings.peso(damage)}'),
                           buildRow('Deposit held', AppSettings.peso(RentalFees.deposit(r))),
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 6),

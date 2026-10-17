@@ -118,6 +118,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
     final late = RentalFees.lateFee(r);
     final damage = RentalFees.damageDeduction(r);
     final delivery = RentalFees.deliveryFee(r);
+    final total = RentalFees.rentalFee(r) + delivery + late + damage;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
@@ -149,6 +150,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                           buildRow('Late fee ($lateDays ${lateDays == 1 ? 'day' : 'days'} × ${AppSettings.peso(perDay)})', AppSettings.peso(late), valueColor: late > 0 ? warn : null),
                           buildRow('Damage deduction', AppSettings.peso(damage)),
                           buildDivider(),
+                          buildRow('Total charges', AppSettings.peso(total), bold: true, valueColor: teal),
                           buildRow('Paid with', r['payment'] == 'cash' ? 'Cash (simulated)' : 'P-wallet (simulated)'),
                         ],
                       ),

@@ -337,8 +337,7 @@ class ProfilePage extends State<ProfileState> {
                                 const SizedBox(height: 2),
                                 Text('Member since ${AppSettings.monthYear(user['joined'])}',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                                const SizedBox(height: 8),
-                                buildTag(user['verified'] == true ? 'ID verified (simulated)' : 'ID check pending (simulated)', user['verified'] == true),
+
 
                               ],
                             ),

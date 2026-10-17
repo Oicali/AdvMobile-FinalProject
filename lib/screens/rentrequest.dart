@@ -1,3 +1,4 @@
+// ===== FILE 3: lib/screens/rentrequest.dart =====
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/alladdresses.dart';
@@ -9,16 +10,16 @@ import 'package:advmobile_finalproject/glob/appsettings.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/itemphoto.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
-
-
+ 
+ 
 class RentRequestState extends StatefulWidget {
   const RentRequestState({super.key});
-
+ 
   @override
   State<RentRequestState> createState() => RentRequestPage();
 }
-
-
+ 
+ 
 class RentRequestPage extends State<RentRequestState> {
   final TextEditingController addressCtrl = TextEditingController();
   Map<String, dynamic>? item;
@@ -28,60 +29,60 @@ class RentRequestPage extends State<RentRequestState> {
   String method = 'pickup'; 
   String? formError; 
   bool loaded = false;
-
+ 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
   static const Color error = Color(0xFFD64545);
-
-
+ 
+ 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (loaded) return;
     loaded = true;
-
+ 
     final arg = ModalRoute.of(context)?.settings.arguments;
     item = arg is String ? AllItems.byId(arg) : null;
     start = AppSettings.demoDate;
     end = AppSettings.addDays(start, 3);
-
+ 
     final mine = AllAddresses.ownedBy(ActiveUser.username).where((a) => a['isDefault'] == true);
     if (mine.isNotEmpty) {
       final a = mine.first;
       addressCtrl.text = '${a['street']}, ${a['barangay']}, ${a['city']}';
     }
   }
-
-
+ 
+ 
   @override
   void dispose() {
     addressCtrl.dispose();
     super.dispose();
   }
-
-
+ 
+ 
   int get days => AppSettings.daysBetween(start, end);
   int get rentalFee => (item!['dailyRate'] as int) * days;
   int get deliveryFee => method == 'delivery' ? AppSettings.deliveryFee : 0;
   int get deposit => item!['deposit'] as int;
   int get total => rentalFee + deliveryFee + deposit;
-
+ 
   String pickupArea() {
     final list = AllAddresses.ownedBy(item!['owner']);
     if (list.isEmpty) return 'Lender will share the pickup location';
     final a = list.firstWhere((x) => x['isDefault'] == true, orElse: () => list.first);
     return '${a['barangay']}, ${a['city']}';
   }
-
-
+ 
+ 
   DateTime local(String ymd) {
     final d = AppSettings.toDate(ymd);
     return DateTime(d.year, d.month, d.day);
   }
-
-
+ 
+ 
   Future<void> pickDate(bool isStart) async {
     final first = isStart ? AppSettings.demoDate : AppSettings.addDays(start, 1);
     final picked = await showDatePicker(
@@ -91,7 +92,7 @@ class RentRequestPage extends State<RentRequestState> {
       lastDate: local(isStart ? AppSettings.addDays(AppSettings.demoDate, 365) : AppSettings.addDays(start, 7)),
     );
     if (picked == null) return;
-
+ 
     setState(() {
       formError = null;
       if (isStart) {
@@ -106,8 +107,8 @@ class RentRequestPage extends State<RentRequestState> {
       }
     });
   }
-
-
+ 
+ 
   String? conflictMessage() {
     for (final r in AllRentals.rentals) {
       if (r['itemId'] != item!['id']) continue;
@@ -121,12 +122,33 @@ class RentRequestPage extends State<RentRequestState> {
     }
     return null;
   }
-
-
+ 
+ 
   void sendRequest() {
-    if (method == 'delivery' && addressCtrl.text.trim().isEmpty) {
-      setState(() => formError = 'Enter a delivery address.');
+    // NEW: bring statuses up to date before checking anything
+    AllRentals.syncStatuses();
+ 
+    // NEW: the item must still be listed and must not be the user's own
+    if (item!['listed'] != true) {
+      setState(() => formError = 'This item is no longer available.');
       return;
+    }
+    if (item!['owner'] == ActiveUser.username) {
+      setState(() => formError = "You can't rent your own item.");
+      return;
+    }
+ 
+    // CHANGED: delivery address must be complete, not just non-empty
+    if (method == 'delivery') {
+      final addr = addressCtrl.text.trim();
+      if (addr.isEmpty) {
+        setState(() => formError = 'Enter a delivery address.');
+        return;
+      }
+      if (addr.length < 10) {
+        setState(() => formError = 'Enter a complete delivery address (house no., street, barangay, city).');
+        return;
+      }
     }
     if (days > 7) {
       setState(() => formError = 'Rentals can be at most 7 days.');
@@ -141,7 +163,7 @@ class RentRequestPage extends State<RentRequestState> {
       setState(() => formError = conflict);
       return;
     }
-
+ 
     AllRentals.rentals.add({
       'id': AllRentals.newId(),
       'itemId': item!['id'],
@@ -155,21 +177,25 @@ class RentRequestPage extends State<RentRequestState> {
       'status': 'Requested',
       'returnedOn': '',
       'lenderConfirmed': false,
+      // NEW: price saved at request time so later item edits cannot change this rental
+      'dailyRate': item!['dailyRate'],
+      'deposit': item!['deposit'],
+      'deliveryFee': deliveryFee,
     });
-
+ 
     final lender = AllUsers.byUsername(item!['owner'])?['fullname'] ?? item!['owner'];
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request sent to $lender.')));
-
+ 
     Navigator.pushNamedAndRemoveUntil(context, '/myrentals', (route) => false, arguments: 'Requested');
   }
-
-
+ 
+ 
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
         boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
-
+ 
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 0, 0, 12),
@@ -182,7 +208,7 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
+ 
   Widget buildSummary() {
     final owner = AllUsers.byUsername(item!['owner'])?['fullname'] ?? item!['owner'];
     return Container(
@@ -213,8 +239,8 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
-
+ 
+ 
   Widget buildDateBox(String label, String value, VoidCallback onTap) {
     return Expanded(
       child: Column(
@@ -248,7 +274,7 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
+ 
   Widget buildDurationPill() {
     return Padding(
       padding: const EdgeInsets.only(left: 2),
@@ -266,8 +292,8 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
-
+ 
+ 
   Widget buildMethodCard(String value, IconData icon, String label, String sub) {
     final selected = method == value;
     return Padding(
@@ -309,8 +335,8 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
-
+ 
+ 
   Widget buildPaymentCard(String value, IconData icon, String label, String sub) {
     final selected = payment == value;
     return Padding(
@@ -352,7 +378,7 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
+ 
   Widget buildCostRow(String label, String value, {bool bold = false}) {
     final style = TextStyle(fontSize: 13, fontWeight: bold ? FontWeight.w800 : FontWeight.w500, color: ink);
     return Padding(
@@ -363,7 +389,7 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
+ 
   Widget buildBottomBar() {
     return Container(
       width: double.infinity,
@@ -423,14 +449,14 @@ class RentRequestPage extends State<RentRequestState> {
       ),
     );
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     if (item == null) {
       return const Scaffold(body: Center(child: Text('Item not found.')));
     }
     final lateRate = (item!['dailyRate'] as int) * AppSettings.lateFeeMultiplier;
-
+ 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: Column(
@@ -445,7 +471,7 @@ class RentRequestPage extends State<RentRequestState> {
                 children: [
                   buildSummary(),
                   const SizedBox(height: 22),
-
+ 
                   buildSectionTitle('Rental dates'),
                   Row(
                     children: [
@@ -457,11 +483,11 @@ class RentRequestPage extends State<RentRequestState> {
                   const SizedBox(height: 10),
                   buildDurationPill(),
                   const SizedBox(height: 22),
-
+ 
                   buildSectionTitle('Get the item'),
                   buildMethodCard('pickup', Icons.storefront_outlined, 'Pick up from lender', 'Free · ${pickupArea()}'),
                   buildMethodCard('delivery', Icons.local_shipping_outlined, 'Deliver to me', AppSettings.peso(AppSettings.deliveryFee)),
-
+ 
                   // Delivery address only when delivery is chosen
                   if (method == 'delivery') ...[
                     const SizedBox(height: 4),
@@ -476,12 +502,12 @@ class RentRequestPage extends State<RentRequestState> {
                     ),
                   ],
                   const SizedBox(height: 18),
-
+ 
                   buildSectionTitle('Payment method'),
                   buildPaymentCard('wallet', Icons.account_balance_wallet_outlined, 'P-wallet (simulated)', 'Your balance ${AppSettings.peso(AllWallets.available(ActiveUser.username))}'),
                   buildPaymentCard('cash', Icons.money, 'Cash (simulated)', 'Pay the lender in person'),
                   const SizedBox(height: 8),
-
+ 
                   buildSectionTitle('Cost summary'),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -492,7 +518,6 @@ class RentRequestPage extends State<RentRequestState> {
                         buildCostRow('Delivery fee', AppSettings.peso(deliveryFee)),
                         buildCostRow('Deposit (refundable)', AppSettings.peso(deposit)),
                         const Divider(height: 18, color: Color(0xFFE3E8E6)),
-                     
                         Container(
                           margin: const EdgeInsets.only(top: 4),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -503,7 +528,7 @@ class RentRequestPage extends State<RentRequestState> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
+ 
             
                   Container(
                     padding: const EdgeInsets.all(12),
