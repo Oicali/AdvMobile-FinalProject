@@ -123,7 +123,7 @@ class ReportIssuePage extends State<ReportIssueState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   Widget buildSection(IconData icon, String title) {
@@ -190,7 +190,7 @@ class ReportIssuePage extends State<ReportIssueState> {
           children: [
             Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off, size: 20, color: selected ? teal : gray),
             const SizedBox(width: 12),
-            Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+            Text(label, style: TextStyle(fontSize: 13, fontWeight: selected ? FontWeight.w800 : FontWeight.w600, color: selected ? teal : ink)),
           ],
         ),
       ),
@@ -247,6 +247,7 @@ class ReportIssuePage extends State<ReportIssueState> {
                         label: 'Amount you are claiming (₱)',
                         controller: amountCtrl,
                         hint: 'Up to ${AppSettings.peso(RentalFees.deposit(r))}',
+                        icon: Icons.payments_outlined,
                         keyboard: TextInputType.number,
                         errorText: errors['amount'],
                         onChanged: (_) => clearError('amount'),
@@ -281,9 +282,22 @@ class ReportIssuePage extends State<ReportIssueState> {
                       onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Photo upload is simulated in this demo.'))),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Reports are reviewed by a simulated admin in this demo.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+                    // Demo note (SIMULATED) in a soft box
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(14)),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline, size: 16, color: teal),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text('Reports are reviewed by a simulated admin in this demo.',
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: teal, height: 1.4)),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -294,7 +308,7 @@ class ReportIssuePage extends State<ReportIssueState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -304,9 +318,13 @@ class ReportIssuePage extends State<ReportIssueState> {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Text(errors['form']!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: error)),
                     ),
-                  SizedBox(
+                  Container(
                     width: double.infinity,
                     height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                    ),
                     child: ElevatedButton(
                       onPressed: submit,
                       style: ElevatedButton.styleFrom(

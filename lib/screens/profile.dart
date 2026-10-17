@@ -38,7 +38,7 @@ class ProfilePage extends State<ProfileState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   // One column inside the stats card
@@ -239,8 +239,17 @@ class ProfilePage extends State<ProfileState> {
 
                     // Identity card: avatar placeholder, name, member since, verified tag
                     Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: cardStyle(20),
+                      padding: const EdgeInsets.all(16),
+                      // Soft mint-to-white gradient so the identity card stands out from the others
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFFD5EFE6), Colors.white],
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
+                      ),
                       child: Row(
                         children: [
                           Container(
@@ -250,7 +259,8 @@ class ProfilePage extends State<ProfileState> {
                             decoration: BoxDecoration(
                               color: teal,
                               shape: BoxShape.circle,
-                              border: Border.all(color: tealSoft, width: 4),
+                              border: Border.all(color: Colors.white, width: 4),
+                              boxShadow: const [BoxShadow(color: Color(0x330F5C5C), blurRadius: 10, offset: Offset(0, 4))],
                             ),
                             child: Text(initialOf(user['fullname'].toString()), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white)),
                           ),
@@ -322,7 +332,14 @@ class ProfilePage extends State<ProfileState> {
                       shape: const StadiumBorder(),
                       textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
-                    child: const Text('Log out'),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.logout, size: 18),
+                        SizedBox(width: 8),
+                        Text('Log out'),
+                      ],
+                    ),
                   ),
                 ),
               ),

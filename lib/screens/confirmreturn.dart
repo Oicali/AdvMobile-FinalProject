@@ -55,7 +55,7 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   Widget buildRow(String label, String value, {bool bold = false, Color color = ink}) {
@@ -75,7 +75,13 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Row(
+            children: [
+              Container(width: 4, height: 16, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999))),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+            ],
+          ),
           Text(trailing, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: trailingColor)),
         ],
       ),
@@ -106,7 +112,13 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$days ${days == 1 ? 'day' : 'days'} late', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: error)),
+          Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, size: 20, color: error),
+              const SizedBox(width: 6),
+              Text('$days ${days == 1 ? 'day' : 'days'} late', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: error)),
+            ],
+          ),
           const SizedBox(height: 6),
           Text('Late fee: ${AppSettings.peso(RentalFees.lateFee(r))}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: error)),
           const SizedBox(height: 2),
@@ -257,7 +269,12 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                             padding: EdgeInsets.symmetric(vertical: 6),
                             child: Divider(height: 1, color: Color(0xFFE3E8E6)),
                           ),
-                          buildRow('Deposit refund to borrower (simulated)', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
+                          // Final refund sits in a tinted pill so it stands out from the lines above it
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
+                            child: buildRow('Deposit refund to borrower (simulated)', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
+                          ),
                         ],
                       ),
                     ),
@@ -298,14 +315,18 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                  boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
+                    Container(
                       width: double.infinity,
                       height: 52,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: allChecked ? const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))] : null,
+                      ),
                       child: ElevatedButton(
                         onPressed: allChecked ? confirmReturn : null,
                         style: ElevatedButton.styleFrom(
@@ -317,7 +338,14 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                         ),
-                        child: const Text('Confirm return'),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.verified_outlined, size: 19),
+                            SizedBox(width: 8),
+                            Text('Confirm return'),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -332,7 +360,14 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                           shape: const StadiumBorder(),
                           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                         ),
-                        child: const Text('Report a problem'),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.flag_outlined, size: 19),
+                            SizedBox(width: 8),
+                            Text('Report a problem'),
+                          ],
+                        ),
                       ),
                     ),
                   ],

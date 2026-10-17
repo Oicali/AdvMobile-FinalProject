@@ -170,99 +170,125 @@ class AddEditAddressPage extends State<AddEditAddressState> {
     );
   }
 
-  @override
+  Widget buildCard(List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: Color(0x140F5C5C), blurRadius: 20, offset: Offset(0, 8))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+    );
+  }
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
       body: Column(
         children: [
-
+    
           TopBar(title: editId != null ? 'Edit address' : 'Add address'),
           Expanded(
             child: SafeArea(
               top: false,
-
+           
               child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-
-
-
-                      if (onboarding) buildStep(),
-                      InputField(label: 'Label', controller: labelCtrl, hint: 'Home', errorText: errors['label'], onChanged: (_) => clearError('label')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'House no. and street', controller: streetCtrl, hint: 'Blk 4 Lot 12, Mabini St.', errorText: errors['street'], onChanged: (_) => clearError('street')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'Barangay', controller: barangayCtrl, hint: 'Brgy. San Roque', errorText: errors['barangay'], onChanged: (_) => clearError('barangay')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'City / Municipality', controller: cityCtrl, hint: 'Your city', errorText: errors['city'], onChanged: (_) => clearError('city')),
-                      const SizedBox(height: 14),
-
-
-                      InkWell(
-                        onTap: () => setState(() => isDefault = !isDefault),
-                        child: Row(
+                builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Checkbox(
-                              value: isDefault,
-                              activeColor: teal,
-                              visualDensity: VisualDensity.compact,
-                              onChanged: (v) => setState(() => isDefault = v ?? false),
+                       
+                            if (onboarding) buildStep(),
+
+                        
+                            buildCard([
+                              InputField(label: 'Label', controller: labelCtrl, hint: 'Home', icon: Icons.label_outline, errorText: errors['label'], onChanged: (_) => clearError('label')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'House no. and street', controller: streetCtrl, hint: 'Blk 4 Lot 12, Mabini St.', icon: Icons.home_outlined, errorText: errors['street'], onChanged: (_) => clearError('street')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'Barangay', controller: barangayCtrl, hint: 'Brgy. San Roque', icon: Icons.location_on_outlined, errorText: errors['barangay'], onChanged: (_) => clearError('barangay')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'City / Municipality', controller: cityCtrl, hint: 'Your city', icon: Icons.location_city_outlined, errorText: errors['city'], onChanged: (_) => clearError('city')),
+                              const SizedBox(height: 16),
+
+                        
+                              InkWell(
+                                borderRadius: BorderRadius.circular(14),
+                                onTap: () => setState(() => isDefault = !isDefault),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isDefault ? const Color(0xFFE3F0EE) : const Color(0xFFF8FBFA),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: isDefault ? teal : const Color(0xFFE3ECEA)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isDefault,
+                                        activeColor: teal,
+                                        visualDensity: VisualDensity.compact,
+                                        onChanged: (v) => setState(() => isDefault = v ?? false),
+                                      ),
+                                      const Text('Set as default address', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ]),
+
+                            const Spacer(),
+                            const SizedBox(height: 20),
+
+                          
+                            Container(
+                              height: 52,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(999),
+                                boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: save,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: teal,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: const StadiumBorder(),
+                                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                                ),
+                                child: const Text('Save address'),
+                              ),
                             ),
-                            const Text('Set as default address', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: ink)),
+                            const SizedBox(height: 12),
+
+                      
+                            SizedBox(
+                              height: 52,
+                              child: OutlinedButton(
+                                onPressed: onboarding ? skip : () => Navigator.pop(context),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: teal,
+                                  side: const BorderSide(color: teal, width: 1.5),
+                                  shape: const StadiumBorder(),
+                                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                                ),
+                                child: Text(onboarding ? 'Skip for now' : 'Cancel'),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-
-                      const Spacer(),
-                      const SizedBox(height: 20),
-
-
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: save,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: teal,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: const Text('Save address'),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-
-                      SizedBox(
-                        height: 52,
-                        child: OutlinedButton(
-                          onPressed: onboarding ? skip : () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: teal,
-                            side: const BorderSide(color: teal, width: 1.5),
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: Text(onboarding ? 'Skip for now' : 'Cancel'),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
           ),
         ],
       ),

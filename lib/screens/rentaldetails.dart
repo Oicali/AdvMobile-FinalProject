@@ -116,7 +116,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   Widget buildStep(Map<String, dynamic> st, bool isLast) {
@@ -139,6 +139,8 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                     color: done ? teal : Colors.white,
                     border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 2),
                   ),
+                  // White check inside finished steps
+                  child: done ? const Icon(Icons.check, size: 9, color: Colors.white) : null,
                 ),
                 if (!isLast) Expanded(child: Container(width: 2, color: done ? teal : const Color(0xFFD5E3E0))),
               ],
@@ -168,7 +170,13 @@ class RentalDetailsPage extends State<RentalDetailsState> {
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 4, 0, 12),
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+      child: Row(
+        children: [
+          Container(width: 4, height: 16, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999))),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
     );
   }
 
@@ -205,9 +213,13 @@ class RentalDetailsPage extends State<RentalDetailsState> {
 
   // Filled / outlined pill buttons used in the pinned action area
   Widget filledButton(String label, VoidCallback onTap) {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+      ),
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
@@ -294,12 +306,16 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                     ),
                     const SizedBox(height: 16),
 
-                  
+                    // Overdue banner with late fee and refund so far
                     if (s == 'Overdue') ...[
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: const Color(0xFFFFE9D6), borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE9D6),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFE8893A), width: 1.5),
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -317,7 +333,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                       const SizedBox(height: 12),
                     ],
 
-                   
+                    // Progress timeline
                     buildSectionTitle('Progress'),
                     Container(
                       padding: const EdgeInsets.all(18),
@@ -359,7 +375,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                         ),
                       ),
 
-                    // Condition checklist card
+                    // Condition checklist card (round check circles, same style as Confirm return)
                     if (showChecklist)
                       Container(
                         padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
@@ -367,7 +383,15 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Condition checklist', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
+                            // Title with a "x of 3" progress count
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('Condition checklist', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: ink)),
+                                Text('${checks.where((c) => c).length} of ${checks.length}',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+                              ],
+                            ),
                             const SizedBox(height: 4),
                             ...List.generate(checks.length, (i) {
                               return InkWell(
@@ -376,9 +400,15 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   child: Row(
                                     children: [
-                                      Icon(checks[i] ? Icons.check_box : Icons.check_box_outline_blank, size: 22, color: checks[i] ? teal : gray),
+                                      // Round check: filled teal when ticked
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(color: checks[i] ? teal : tealSoft, shape: BoxShape.circle),
+                                        child: Icon(Icons.check, size: 19, color: checks[i] ? Colors.white : const Color(0xFFB5C2BF)),
+                                      ),
                                       const SizedBox(width: 12),
-                                      Expanded(child: Text(checkLabels[i], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: ink))),
+                                      Expanded(child: Text(checkLabels[i], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: ink))),
                                     ],
                                   ),
                                 ),
@@ -407,7 +437,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                  boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
                 ),
                 child: buildActions(r),
               ),

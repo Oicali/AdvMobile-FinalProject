@@ -73,7 +73,7 @@ class RateReviewPage extends State<RateReviewState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   String initialOf(String name) {
@@ -139,7 +139,12 @@ class RateReviewPage extends State<RateReviewState> {
           onTap: () => setState(() => score = i + 1),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Icon(on ? Icons.star_rounded : Icons.star_outline_rounded, size: 40, color: on ? teal : const Color(0xFFB5C2BF)),
+            // Selected stars turn gold and grow slightly
+            child: AnimatedScale(
+              scale: on ? 1.12 : 1.0,
+              duration: const Duration(milliseconds: 150),
+              child: Icon(on ? Icons.star_rounded : Icons.star_outline_rounded, size: 40, color: on ? const Color(0xFFF5A623) : const Color(0xFFB5C2BF)),
+            ),
           ),
         );
       }),
@@ -180,8 +185,12 @@ class RateReviewPage extends State<RateReviewState> {
           ),
           buildStars(),
           const SizedBox(height: 10),
-          Text(score == 0 ? 'Tap a star to rate' : scoreLabels[score - 1],
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: score == 0 ? gray : teal)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(color: score == 0 ? const Color(0xFFF1F3F2) : tealSoft, borderRadius: BorderRadius.circular(999)),
+            child: Text(score == 0 ? 'Tap a star to rate' : scoreLabels[score - 1],
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: score == 0 ? gray : teal)),
+          ),
         ],
       ),
     );
@@ -259,11 +268,15 @@ class RateReviewPage extends State<RateReviewState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
-              child: SizedBox(
+              child: Container(
                 width: double.infinity,
                 height: 52,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(999),
+                  boxShadow: score == 0 ? null : const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                ),
                 child: ElevatedButton(
                   onPressed: score == 0 ? null : submit,
                   style: ElevatedButton.styleFrom(

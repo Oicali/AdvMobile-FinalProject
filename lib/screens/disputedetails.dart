@@ -83,7 +83,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
 
@@ -111,6 +111,8 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                     color: done ? teal : Colors.white,
                     border: Border.all(color: done ? teal : const Color(0xFF98A4A2), width: 2),
                   ),
+                  // White check inside finished steps
+                  child: done ? const Icon(Icons.check, size: 9, color: Colors.white) : null,
                 ),
                 if (!isLast) Expanded(child: Container(width: 2, color: done ? teal : const Color(0xFFD5E3E0))),
               ],
@@ -143,7 +145,13 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+          Row(
+            children: [
+              Container(width: 4, height: 16, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999))),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+            ],
+          ),
           if (trailing.isNotEmpty) Text(trailing, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
         ],
       ),
@@ -192,6 +200,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: Color(0x4D0F5C5C), blurRadius: 20, offset: Offset(0, 10))],
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -274,9 +283,13 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
   Widget pillButton(String label, VoidCallback onTap, {bool filled = false}) {
     const shape = StadiumBorder();
     const text = TextStyle(fontSize: 15, fontWeight: FontWeight.w700);
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 52,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: filled ? const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))] : null,
+      ),
       child: filled
           ? ElevatedButton(onPressed: onTap, style: ElevatedButton.styleFrom(backgroundColor: teal, foregroundColor: Colors.white, elevation: 0, shape: shape, textStyle: text), child: Text(label))
           : OutlinedButton(onPressed: onTap, style: OutlinedButton.styleFrom(foregroundColor: teal, side: const BorderSide(color: teal, width: 1.5), shape: shape, textStyle: text), child: Text(label)),
@@ -381,7 +394,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

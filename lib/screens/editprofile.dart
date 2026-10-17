@@ -84,7 +84,7 @@ class EditProfilePage extends State<EditProfileState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   String initialOf(String name) {
@@ -183,14 +183,24 @@ class EditProfilePage extends State<EditProfileState> {
                     
                       buildPhotoCard(),
                       const SizedBox(height: 22),
-                      buildSection(Icons.person_outline, 'About you'),
+                   
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: cardStyle(24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            buildSection(Icons.person_outline, 'About you'),
 
    
-                      InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
+                      InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', icon: Icons.badge_outlined, errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
                       const SizedBox(height: 14),
-                      InputField(label: 'Mobile number', controller: phoneCtrl, hint: '0917 000 0000', keyboard: TextInputType.phone, errorText: errors['phone'], onChanged: (_) => clearError('phone')),
+                      InputField(label: 'Mobile number', controller: phoneCtrl, hint: '0917 000 0000', icon: Icons.phone_outlined, keyboard: TextInputType.phone, errorText: errors['phone'], onChanged: (_) => clearError('phone')),
                       const SizedBox(height: 14),
-                      InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
+                      InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', icon: Icons.mail_outline, keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 14),
 
      
@@ -223,8 +233,12 @@ class EditProfilePage extends State<EditProfileState> {
                       const Spacer(),
                       const SizedBox(height: 20),
 
-                      SizedBox(
+                      Container(
                         height: 52,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                        ),
                         child: ElevatedButton(
                           onPressed: save,
                           style: ElevatedButton.styleFrom(

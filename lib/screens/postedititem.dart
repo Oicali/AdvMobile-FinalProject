@@ -138,8 +138,9 @@ class PostEditItemPage extends State<PostEditItemState> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFF8FBFA),
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE3ECEA), width: 1.5),
             boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 3))],
           ),
           child: DropdownButtonHideUnderline(
@@ -254,15 +255,16 @@ class PostEditItemPage extends State<PostEditItemState> {
         margin: const EdgeInsets.only(right: 10),
         width: 76,
         height: 76,
+        decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(16)),
         child: CustomPaint(
           painter: _DashedBorderPainter(),
           child: const Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.add_photo_alternate_outlined, size: 22, color: gray),
+                Icon(Icons.add_photo_alternate_outlined, size: 22, color: teal),
                 SizedBox(height: 2),
-                Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: gray)),
+                Text('Upload', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: teal)),
               ],
             ),
           ),
@@ -306,8 +308,19 @@ class PostEditItemPage extends State<PostEditItemState> {
                     const SizedBox(height: 22),
 
         
+                    // White card that holds the details fields
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                     buildSection(Icons.info_outline, 'Details'),
-                    InputField(label: 'Item name', controller: nameCtrl, hint: 'Projector (HD)', errorText: errors['name'], onChanged: (_) => clearError('name')),
+                    InputField(label: 'Item name', controller: nameCtrl, hint: 'Projector (HD)', icon: Icons.inventory_2_outlined, errorText: errors['name'], onChanged: (_) => clearError('name')),
                     const SizedBox(height: 14),
 
 
@@ -331,15 +344,32 @@ class PostEditItemPage extends State<PostEditItemState> {
                       errorText: errors['desc'],
                       onChanged: (_) => clearError('desc'),
                     ),
-                    const SizedBox(height: 22),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // White card that holds the pricing fields
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
                     buildSection(Icons.payments_outlined, 'Pricing'),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: InputField(label: 'Daily rate (₱)', controller: rateCtrl, hint: '400', keyboard: TextInputType.number, errorText: errors['rate'], onChanged: (_) => clearError('rate'))),
+                        Expanded(child: InputField(label: 'Daily rate (₱)', controller: rateCtrl, hint: '400', icon: Icons.sell_outlined, keyboard: TextInputType.number, errorText: errors['rate'], onChanged: (_) => clearError('rate'))),
                         const SizedBox(width: 12),
-                        Expanded(child: InputField(label: 'Deposit (₱)', controller: depositCtrl, hint: '4,000', keyboard: TextInputType.number, errorText: errors['deposit'], onChanged: (_) => clearError('deposit'))),
+                        Expanded(child: InputField(label: 'Deposit (₱)', controller: depositCtrl, hint: '4,000', icon: Icons.savings_outlined, keyboard: TextInputType.number, errorText: errors['deposit'], onChanged: (_) => clearError('deposit'))),
                       ],
+                    ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -352,7 +382,7 @@ class PostEditItemPage extends State<PostEditItemState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -362,9 +392,13 @@ class PostEditItemPage extends State<PostEditItemState> {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Text(errors['lock']!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: error)),
                     ),
-                  SizedBox(
+                  Container(
                     width: double.infinity,
                     height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                    ),
                     child: ElevatedButton(
                       onPressed: save,
                       style: ElevatedButton.styleFrom(
@@ -406,7 +440,7 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFB5C2BF)
+      ..color = const Color(0xFF0F5C5C)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     final path = Path()..addRRect(RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(16)));

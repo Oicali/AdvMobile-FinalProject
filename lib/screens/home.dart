@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allitems.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
+import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/bottomnav.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
 import 'package:advmobile_finalproject/widgets/itemcard.dart';
@@ -259,7 +260,7 @@ class HomePage extends State<HomeState> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
-                          mainAxisExtent: 272,
+                          mainAxisExtent: 284,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {

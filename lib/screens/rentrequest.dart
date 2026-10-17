@@ -145,13 +145,19 @@ class RentRequestPage extends State<RentRequestState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 3))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 0, 0, 12),
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+      child: Row(
+        children: [
+          Container(width: 4, height: 16, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999))),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
     );
   }
 
@@ -251,7 +257,10 @@ class RentRequestPage extends State<RentRequestState> {
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: cardStyle(16).copyWith(border: Border.all(color: selected ? teal : Colors.transparent, width: 1.5)),
+          decoration: cardStyle(16).copyWith(
+            color: selected ? const Color(0xFFF1F8F6) : Colors.white,
+            border: Border.all(color: selected ? teal : Colors.transparent, width: 1.5),
+          ),
           child: Row(
             children: [
               Container(
@@ -296,7 +305,7 @@ class RentRequestPage extends State<RentRequestState> {
       width: double.infinity,
       decoration: const BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+        boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
       ),
       child: SafeArea(
         top: false,
@@ -323,8 +332,12 @@ class RentRequestPage extends State<RentRequestState> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  Container(
                     height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                    ),
                     child: ElevatedButton(
                       onPressed: sendRequest,
                       style: ElevatedButton.styleFrom(
@@ -392,6 +405,7 @@ class RentRequestPage extends State<RentRequestState> {
                       label: 'Delivery address',
                       controller: addressCtrl,
                       hint: 'House no., street, barangay, city',
+                      icon: Icons.location_on_outlined,
                       onChanged: (_) {
                         if (formError != null) setState(() => formError = null);
                       },
@@ -409,15 +423,34 @@ class RentRequestPage extends State<RentRequestState> {
                         buildCostRow('Delivery fee', AppSettings.peso(deliveryFee)),
                         buildCostRow('Deposit (refundable)', AppSettings.peso(deposit)),
                         const Divider(height: 18, color: Color(0xFFE3E8E6)),
-                        buildCostRow('Total due', AppSettings.peso(total), bold: true),
+                     
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
+                          child: buildCostRow('Total due', AppSettings.peso(total), bold: true),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
 
-                  // Late fee + return method note
-                  Text('Late return costs ${AppSettings.peso(lateRate)} per extra day, taken from the deposit. Return uses the same method.',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+            
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: const Color(0xFFFFF1E6), borderRadius: BorderRadius.circular(14)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline, size: 16, color: Color(0xFFE8893A)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Late return costs ${AppSettings.peso(lateRate)} per extra day, taken from the deposit. Return uses the same method.',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF9A4A0F), height: 1.4)),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
