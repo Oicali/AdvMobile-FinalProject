@@ -76,7 +76,11 @@ class LoginPage extends State<LoginState> {
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
-        color: mint,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFA4E0C9), mint],
+        ),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
       child: Stack(
@@ -116,7 +120,7 @@ class LoginPage extends State<LoginState> {
     );
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F5),
@@ -127,76 +131,109 @@ class LoginPage extends State<LoginState> {
           children: [
             buildHeader(),
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Welcome back',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
-                  const SizedBox(height: 4),
-                  const Text('Log in to borrow or lend.',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
-                  const SizedBox(height: 22),
+                  // White card that holds the whole form
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 24, offset: Offset(0, 10))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text('Welcome back',
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.5)),
+                        const SizedBox(height: 4),
+                        const Text('Log in to borrow or lend.',
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
+                        const SizedBox(height: 22),
 
-                  // Username field (login uses username, not email)
-                  InputField(
-                    label: 'Username',
-                    controller: usernameCtrl,
-                    hint: 'juan',
-                    hasError: showError,
-                    onChanged: (_) {
-                      if (showError) setState(() => showError = false);
-                    },
-                  ),
-                  const SizedBox(height: 16),
+                        // Username field (login uses username, not email)
+                        InputField(
+                          label: 'Username',
+                          controller: usernameCtrl,
+                          hint: 'juan',
+                          icon: Icons.person_outline,
+                          hasError: showError,
+                          onChanged: (_) {
+                            if (showError) setState(() => showError = false);
+                          },
+                        ),
+                        const SizedBox(height: 16),
 
-                  // Password field + error message after a failed login
-                  InputField(
-                    label: 'Password',
-                    controller: passwordCtrl,
-                    hint: 'Enter your password',
-                    obscure: true,
-                    errorText: showError ? 'Wrong username or password. Check both and try again.' : null,
-                    onChanged: (_) {
-                      if (showError) setState(() => showError = false);
-                    },
-                  ),
-                  const SizedBox(height: 24),
+                        // Password field + error message after a failed login
+                        InputField(
+                          label: 'Password',
+                          controller: passwordCtrl,
+                          hint: 'Enter your password',
+                          icon: Icons.lock_outline,
+                          obscure: true,
+                          errorText: showError ? 'Wrong username or password. Check both and try again.' : null,
+                          onChanged: (_) {
+                            if (showError) setState(() => showError = false);
+                          },
+                        ),
+                        const SizedBox(height: 24),
 
-                  // Filled pill: log in
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: teal,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: const StadiumBorder(),
-                        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                      child: const Text('Log in'),
+                        // Filled pill with a soft teal glow: log in
+                        Container(
+                          height: 52,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(999),
+                            boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: teal,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: const StadiumBorder(),
+                              textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                            ),
+                            child: const Text('Log in'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Divider with "or"
+                        Row(
+                          children: const [
+                            Expanded(child: Divider(color: Color(0xFFE3ECEA))),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: Text('or', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+                            ),
+                            Expanded(child: Divider(color: Color(0xFFE3ECEA))),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Outlined pill: go to Register
+                        SizedBox(
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pushNamed(context, '/register'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: teal,
+                              side: const BorderSide(color: teal, width: 1.5),
+                              shape: const StadiumBorder(),
+                              textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                            ),
+                            child: const Text('Create account'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 18),
 
-                  // Outlined pill: go to Register
-                  SizedBox(
-                    height: 52,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/register'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: teal,
-                        side: const BorderSide(color: teal, width: 1.5),
-                        shape: const StadiumBorder(),
-                        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                      child: const Text('Create account'),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Demo label: everything in the app is simulated
+                  // Demo label: everything in the app is simulated (SIMULATED)
                   const Text('Front-end demo. Accounts, payments and ID checks are simulated.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),

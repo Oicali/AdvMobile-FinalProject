@@ -113,7 +113,18 @@ class RegisterPage extends State<RegisterState> {
       ),
     );
   }
-
+  // White rounded card that groups one section of the form
+  Widget buildCard(List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: Color(0x140F5C5C), blurRadius: 20, offset: Offset(0, 8))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,83 +138,90 @@ class RegisterPage extends State<RegisterState> {
               top: false,
               // LayoutBuilder + IntrinsicHeight keeps the buttons at the bottom but lets the page scroll
               child: LayoutBuilder(
-          builder: (context, constraints) => SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: IntrinsicHeight(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            buildStep(),
+                            const SizedBox(height: 18),
 
+                            // Card 1: personal details
+                            buildCard([
+                              buildSection(Icons.person_outline, 'About you'),
+                              InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', icon: Icons.badge_outlined, errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'Username', controller: usernameCtrl, hint: 'juan', icon: Icons.alternate_email, errorText: errors['username'], onChanged: (_) => clearError('username')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'Mobile number', controller: phoneCtrl, hint: '0917 000 0000', icon: Icons.phone_outlined, keyboard: TextInputType.phone, errorText: errors['phone'], onChanged: (_) => clearError('phone')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', icon: Icons.mail_outline, keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
+                            ]),
+                            const SizedBox(height: 16),
 
-                      buildStep(),
-                      const SizedBox(height: 22),
-                      buildSection(Icons.person_outline, 'About you'),
-                      InputField(label: 'Full name', controller: fullnameCtrl, hint: 'Juan D.', errorText: errors['fullname'], onChanged: (_) => clearError('fullname')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'Username', controller: usernameCtrl, hint: 'juan', errorText: errors['username'], onChanged: (_) => clearError('username')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'Mobile number', controller: phoneCtrl, hint: '0917 000 0000', keyboard: TextInputType.phone, errorText: errors['phone'], onChanged: (_) => clearError('phone')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
-                      const SizedBox(height: 14),
-                      const SizedBox(height: 10),
-                      buildSection(Icons.lock_outline, 'Secure your account'),
-                      InputField(label: 'Password', controller: passwordCtrl, hint: 'Create a password', obscure: true, errorText: errors['password'], onChanged: (_) => clearError('password')),
-                      const SizedBox(height: 14),
-                      InputField(label: 'Confirm password', controller: confirmCtrl, hint: 'Re-enter your password', obscure: true, errorText: errors['confirm'], onChanged: (_) => clearError('confirm')),
-                      const SizedBox(height: 14),
+                            // Card 2: password
+                            buildCard([
+                              buildSection(Icons.lock_outline, 'Secure your account'),
+                              InputField(label: 'Password', controller: passwordCtrl, hint: 'Create a password', icon: Icons.lock_outline, obscure: true, errorText: errors['password'], onChanged: (_) => clearError('password')),
+                              const SizedBox(height: 14),
+                              InputField(label: 'Confirm password', controller: confirmCtrl, hint: 'Re-enter your password', icon: Icons.verified_user_outlined, obscure: true, errorText: errors['confirm'], onChanged: (_) => clearError('confirm')),
+                            ]),
 
+                            const Spacer(),
+                            const SizedBox(height: 20),
+                            // Demo label (SIMULATED)
+                            const Text('Next, you can add an address or skip it. Account setup is simulated in this demo.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
+                            const SizedBox(height: 14),
 
+                            // Filled pill with a soft teal glow: create the account and move to the address step
+                            Container(
+                              height: 52,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(999),
+                                boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: createAccount,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: teal,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: const StadiumBorder(),
+                                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                                ),
+                                child: const Text('Next'),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
 
-                      const Spacer(),
-                      const SizedBox(height: 20),
-                      const Text('Next, you can add an address or skip it. Account setup is simulated in this demo.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
-                      const SizedBox(height: 14),
-
-                      // Filled pill: create the account and move to the address step
-                      SizedBox(
-                        height: 52,
-                        child: ElevatedButton(
-                          onPressed: createAccount,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: teal,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: const Text('Next'),
+                            // Outlined pill: back to Login (replace so screens don't stack)
+                            SizedBox(
+                              height: 52,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: teal,
+                                  side: const BorderSide(color: teal, width: 1.5),
+                                  shape: const StadiumBorder(),
+                                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                                ),
+                                child: const Text('I already have an account'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-
-                      // Outlined pill: back to Login (replace so screens don't stack)
-                      SizedBox(
-                        height: 52,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: teal,
-                            side: const BorderSide(color: teal, width: 1.5),
-                            shape: const StadiumBorder(),
-                            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                          ),
-                          child: const Text('I already have an account'),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
           ),
         ],
       ),

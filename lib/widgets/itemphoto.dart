@@ -27,14 +27,31 @@ class ItemPhoto extends StatelessWidget {
     }
   }
 
-  // Grey box shown when there is no image or the file can't be loaded
+  // Mint gradient with the category icon in a white circle, shown when there is no image or it can't be loaded
   Widget buildFallback() {
+    final circle = iconSize * 1.9;
     return Container(
       width: width,
       height: height,
-      color: boxColor,
       alignment: Alignment.center,
-      child: Icon(iconFor('${item['category']}'), size: iconSize, color: iconColor),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFD5EFE6), Color(0xFFB7E0D2)],
+        ),
+      ),
+      child: Container(
+        width: circle,
+        height: circle,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 8, offset: Offset(0, 3))],
+        ),
+        child: Icon(iconFor('${item['category']}'), size: iconSize, color: const Color(0xFF0F5C5C)),
+      ),
     );
   }
 
@@ -43,7 +60,17 @@ class ItemPhoto extends StatelessWidget {
     final path = (item['image'] ?? '') as String;
     final Widget child = path.isEmpty
         ? buildFallback()
-        : Image.asset(path, width: width, height: height, fit: BoxFit.cover, errorBuilder: (context, error, stack) => buildFallback());
+        : Image.asset(
+            path,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            // Fade in once the first frame is ready
+            frameBuilder: (context, child, frame, sync) => sync
+                ? child
+                : AnimatedOpacity(opacity: frame == null ? 0 : 1, duration: const Duration(milliseconds: 250), child: child),
+            errorBuilder: (context, error, stack) => buildFallback(),
+          );
     return ClipRRect(borderRadius: BorderRadius.circular(radius), child: child);
   }
 }

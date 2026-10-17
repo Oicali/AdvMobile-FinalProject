@@ -30,7 +30,7 @@ class MyListingsPage extends State<MyListingsState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   // Open the editor: no id = post new, an id = edit; refresh when we come back
@@ -62,22 +62,21 @@ class MyListingsPage extends State<MyListingsState> {
     });
   }
 
-  // Small outlined pill; onTap null = disabled look
-  Widget buildPill(String label, VoidCallback? onTap) {
+  
+  Widget buildPill(String label, VoidCallback? onTap, {IconData? icon, Color color = teal}) {
     final enabled = onTap != null;
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: teal,
-        disabledForegroundColor: const Color(0xFFA9B6B4),
-        side: BorderSide(color: enabled ? teal : const Color(0xFFC9D3D1), width: 1.5),
-        shape: const StadiumBorder(),
-        minimumSize: const Size(0, 38),
-        padding: const EdgeInsets.symmetric(horizontal: 22),
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-      ),
-      child: Text(label),
+    final style = OutlinedButton.styleFrom(
+      foregroundColor: color,
+      disabledForegroundColor: const Color(0xFFA9B6B4),
+      backgroundColor: enabled ? color.withAlpha(20) : Colors.transparent,
+      side: BorderSide(color: enabled ? color : const Color(0xFFC9D3D1), width: 1.5),
+      shape: const StadiumBorder(),
+      minimumSize: const Size(0, 36),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
     );
+    if (icon == null) return OutlinedButton(onPressed: onTap, style: style, child: Text(label));
+    return OutlinedButton.icon(onPressed: onTap, style: style, icon: Icon(icon, size: 16), label: Text(label));
   }
 
 
@@ -129,12 +128,12 @@ class MyListingsPage extends State<MyListingsState> {
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
                 const SizedBox(height: 10),
 
-                // Edit always works; Delete is disabled while a rental commits the item
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
-                    buildPill('Edit', () => openEditor(id)),
-                    const SizedBox(width: 8),
-                    buildPill('Delete', locked ? null : () => confirmDelete(item)),
+                    buildPill('Edit', () => openEditor(id), icon: Icons.edit_outlined),
+                    buildPill('Delete', locked ? null : () => confirmDelete(item), icon: Icons.delete_outline, color: error),
                   ],
                 ),
                 if (waiting != null)
@@ -226,8 +225,8 @@ class MyListingsPage extends State<MyListingsState> {
                       Container(
                         width: 52,
                         height: 52,
-                        decoration: const BoxDecoration(color: tealSoft, shape: BoxShape.circle),
-                        child: const Icon(Icons.inbox_outlined, size: 26, color: teal),
+                        decoration: const BoxDecoration(color: teal, shape: BoxShape.circle),
+                        child: const Icon(Icons.inbox_outlined, size: 26, color: Colors.white),
                       ),
                       const SizedBox(width: 14),
                       const Expanded(

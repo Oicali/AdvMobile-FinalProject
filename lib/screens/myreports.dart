@@ -147,7 +147,9 @@ class MyReportsPage extends State<MyReportsState> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+          // Open reports get an orange border so they stand out from resolved ones
+          border: d['status'] != 'Resolved' ? Border.all(color: const Color(0xFFE8893A), width: 1.5) : null,
+          boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +176,28 @@ class MyReportsPage extends State<MyReportsState> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Text('${d['reason']}', maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                      // Reason in a soft box with a flag icon
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 1),
+                              child: Icon(Icons.flag_outlined, size: 14, color: teal),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text('${d['reason']}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink)),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 3),
                       Text(who, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
                       if (filedOn.isNotEmpty) ...[
@@ -183,7 +206,13 @@ class MyReportsPage extends State<MyReportsState> {
                       ],
                       if (amount > 0) ...[
                         const SizedBox(height: 6),
-                        Text('${AppSettings.peso(amount)} in question', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: teal)),
+                        // Teal pill with the disputed amount
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999)),
+                          child: Text('${AppSettings.peso(amount)} in question',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
                       ],
                     ],
                   ),

@@ -64,20 +64,19 @@ class MyAddressesPage extends State<MyAddressesState> {
     });
   }
 
-  // Small outlined pill button
-  Widget buildPill(String label, VoidCallback onTap) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: teal,
-        side: const BorderSide(color: teal, width: 1.5),
-        shape: const StadiumBorder(),
-        minimumSize: const Size(0, 38),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-      ),
-      child: Text(label),
+
+  Widget buildPill(String label, VoidCallback onTap, {IconData? icon, Color color = teal}) {
+    final style = OutlinedButton.styleFrom(
+      foregroundColor: color,
+      backgroundColor: color.withAlpha(20),
+      side: BorderSide(color: color, width: 1.5),
+      shape: const StadiumBorder(),
+      minimumSize: const Size(0, 36),
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
     );
+    if (icon == null) return OutlinedButton(onPressed: onTap, style: style, child: Text(label));
+    return OutlinedButton.icon(onPressed: onTap, style: style, icon: Icon(icon, size: 16), label: Text(label));
   }
 
   // One address card
@@ -90,7 +89,8 @@ class MyAddressesPage extends State<MyAddressesState> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        border: isDefault ? Border.all(color: teal, width: 1.5) : null,
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,9 +131,9 @@ class MyAddressesPage extends State<MyAddressesState> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              buildPill('Edit', () => openForm(a['id'])),
-              if (!isDefault) buildPill('Set as default', () => setDefault(a)),
-              buildPill('Delete', () => confirmDelete(a)),
+              buildPill('Edit', () => openForm(a['id']), icon: Icons.edit_outlined),
+              if (!isDefault) buildPill('Set as default', () => setDefault(a), icon: Icons.check_circle_outline),
+              buildPill('Delete', () => confirmDelete(a), icon: Icons.delete_outline, color: error),
             ],
           ),
         ],
@@ -190,7 +190,7 @@ class MyAddressesPage extends State<MyAddressesState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: SizedBox(
                 width: double.infinity,
@@ -204,7 +204,14 @@ class MyAddressesPage extends State<MyAddressesState> {
                     shape: const StadiumBorder(),
                     textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
-                  child: const Text('Add address'),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add, size: 20),
+                      SizedBox(width: 6),
+                      Text('Add address'),
+                    ],
+                  ),
                 ),
               ),
             ),

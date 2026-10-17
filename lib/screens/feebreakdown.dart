@@ -23,7 +23,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   Widget buildRow(String label, String value, {bool bold = false, Color? valueColor}) {
@@ -45,7 +45,13 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 12),
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+      child: Row(
+        children: [
+          Container(width: 4, height: 16, decoration: BoxDecoration(color: teal, borderRadius: BorderRadius.circular(999))),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: ink)),
+        ],
+      ),
     );
   }
 
@@ -60,6 +66,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: Color(0x4D0F5C5C), blurRadius: 20, offset: Offset(0, 10))],
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -156,7 +163,12 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                           buildRow('Less late fee', minus(late)),
                           if (damage > 0) buildRow('Less damage deduction', minus(damage)),
                           buildDivider(),
-                          buildRow('Deposit refund', AppSettings.peso(RentalFees.depositRefund(r)), bold: true),
+                         
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            decoration: BoxDecoration(color: const Color(0xFFE3F0EE), borderRadius: BorderRadius.circular(12)),
+                            child: buildRow('Deposit refund', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, valueColor: teal),
+                          ),
                         ],
                       ),
                     ),
@@ -178,13 +190,17 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: Column(
                 children: [
-                  SizedBox(
+                  Container(
                     width: double.infinity,
                     height: 52,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                    ),
                     child: ElevatedButton(
                 
                       onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/myrentals', (route) => false),

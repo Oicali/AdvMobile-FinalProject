@@ -123,7 +123,7 @@ class MyRentalsPage extends State<MyRentalsState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
 
@@ -285,11 +285,11 @@ class MyRentalsPage extends State<MyRentalsState> {
                           StatusTag(text: status, attention: status == 'Overdue'),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      ...detailLines(r).map((l) => Padding(
-                            padding: const EdgeInsets.only(bottom: 3),
-                            child: Text(l, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
-                          )),
+                      const SizedBox(height: 4),
+                      // Daily rate under the name (only if the item still exists)
+                      if (item != null)
+                        Text('${AppSettings.peso(item['dailyRate'])} / day',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
                     ],
                   ),
                 ),
@@ -297,6 +297,50 @@ class MyRentalsPage extends State<MyRentalsState> {
             ),
 
      
+            // Tinted strip with the due date / status lines (orange when overdue)
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: status == 'Overdue' ? const Color(0xFFFFF1E6) : tealSoft,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    status == 'Overdue'
+                        ? Icons.warning_amber_rounded
+                        : status == 'Requested'
+                            ? Icons.hourglass_empty
+                            : status == 'Completed'
+                                ? Icons.check_circle_outline
+                                : Icons.event_outlined,
+                    size: 16,
+                    color: status == 'Overdue' ? warn : teal,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: detailLines(r)
+                          .map((l) => Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Text(l,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: status == 'Overdue' ? const Color(0xFF9A4A0F) : ink,
+                                    )),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             if (status == 'Requested') ...[
               const SizedBox(height: 10),
               SizedBox(

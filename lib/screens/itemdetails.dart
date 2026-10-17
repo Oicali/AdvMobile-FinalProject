@@ -35,7 +35,7 @@ class ItemDetailsPage extends State<ItemDetailsState> {
   BoxDecoration cardStyle(double radius) => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(radius),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 14, offset: Offset(0, 4))],
+        boxShadow: const [BoxShadow(color: Color(0x1A0F5C5C), blurRadius: 18, offset: Offset(0, 6))],
       );
 
   String initialOf(String name) {
@@ -117,7 +117,14 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    ItemPhoto(item: item, height: 280, width: double.infinity, radius: 20, iconSize: 72),
+                    // Shadow wrapper so the photo lifts off the page
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [BoxShadow(color: Color(0x290F5C5C), blurRadius: 22, offset: Offset(0, 10))],
+                      ),
+                      child: ItemPhoto(item: item, height: 280, width: double.infinity, radius: 20, iconSize: 72),
+                    ),
                     const SizedBox(height: 18),
 
                     Row(
@@ -127,7 +134,30 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                         StatusTag(text: availability, attention: availability != 'Available'),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
+                    // Quick-glance chips: category and condition
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final c in [
+                          [Icons.category_outlined, '${item['category']}'],
+                          [Icons.verified_outlined, '${item['condition']}'],
+                        ])
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(999)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(c[0] as IconData, size: 14, color: teal),
+                                const SizedBox(width: 5),
+                                Text(c[1] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: teal)),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
 
 
                     const SizedBox(height: 8),
@@ -157,8 +187,14 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                                 children: [
                                   Text(owner?['fullname'] ?? item['owner'], style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: ink)),
                                   const SizedBox(height: 3),
-                                  Text(rating == null ? 'No reviews yet' : 'Rating ${rating.toStringAsFixed(1)}',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray)),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.star_rounded, size: 15, color: rating == null ? const Color(0xFFC5CFCD) : const Color(0xFFF5A623)),
+                                      const SizedBox(width: 3),
+                                      Text(rating == null ? 'No reviews yet' : '${rating.toStringAsFixed(1)} lender rating',
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -201,7 +237,7 @@ class ItemDetailsPage extends State<ItemDetailsState> {
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [BoxShadow(color: Color(0x1A000000), blurRadius: 16, offset: Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Color(0x1F0F5C5C), blurRadius: 16, offset: Offset(0, -4))],
               ),
               child: Row(
                 children: [
@@ -229,14 +265,22 @@ class ItemDetailsPage extends State<ItemDetailsState> {
                       child: Container(
                         width: 48,
                         height: 48,
-                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: teal, width: 1.5)),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: saved ? tealSoft : Colors.white,
+                          border: Border.all(color: teal, width: 1.5),
+                        ),
                         child: Icon(saved ? Icons.favorite : Icons.favorite_border, size: 22, color: teal),
                       ),
                     ),
                     const SizedBox(width: 10),
                     // Main action
-                    SizedBox(
+                    Container(
                       height: 48,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: const [BoxShadow(color: Color(0x550F5C5C), blurRadius: 14, offset: Offset(0, 6))],
+                      ),
                       child: ElevatedButton(
                         onPressed: () => Navigator.pushNamed(context, '/rentrequest', arguments: id).then((_) => setState(() {})),
                         style: ElevatedButton.styleFrom(

@@ -11,6 +11,7 @@ class InputField extends StatefulWidget {
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final int maxLines; // above 1 makes a multi-line box (ignored for password fields)
+  final IconData? icon; // optional leading icon
 
   const InputField({
     super.key,
@@ -23,6 +24,7 @@ class InputField extends StatefulWidget {
     this.errorText,
     this.onChanged,
     this.maxLines = 1,
+    this.icon,
   });
 
   @override
@@ -66,8 +68,12 @@ class _InputFieldState extends State<InputField> {
               hintText: widget.hint,
               hintStyle: const TextStyle(color: Color(0xFF98A4A2)),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFFF8FBFA),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              // Leading icon turns red on error
+              prefixIcon: widget.icon == null
+                  ? null
+                  : Icon(widget.icon, size: 19, color: bad ? const Color(0xFFD64545) : const Color(0xFF0F5C5C)),
               // Eye icon only on password fields
               suffixIcon: widget.obscure
                   ? IconButton(
@@ -75,7 +81,7 @@ class _InputFieldState extends State<InputField> {
                       onPressed: () => setState(() => hidden = !hidden),
                     )
                   : null,
-              enabledBorder: outline(bad ? const Color(0xFFD64545) : Colors.transparent),
+              enabledBorder: outline(bad ? const Color(0xFFD64545) : const Color(0xFFE3ECEA)),
               focusedBorder: outline(bad ? const Color(0xFFD64545) : const Color(0xFF0F5C5C)),
             ),
           ),
