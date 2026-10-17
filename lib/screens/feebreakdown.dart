@@ -95,7 +95,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: const Color(0x33FFFFFF), borderRadius: BorderRadius.circular(999)),
-                  child: Text(closed ? 'Closed as not returned (simulated)' : cash ? 'Settled in person (simulated)' : 'Simulated refund', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
+                  child: Text(closed ? 'Closed as not returned ' : cash ? 'Settled in person ' : 'Simulated refund', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
                 ),
               ],
             ),
@@ -151,7 +151,7 @@ class FeeBreakdownPage extends State<FeeBreakdownState> {
                           buildRow('Damage deduction', AppSettings.peso(damage)),
                           buildDivider(),
                           buildRow('Total charges', AppSettings.peso(total), bold: true, valueColor: teal),
-                          buildRow('Paid with', r['payment'] == 'cash' ? 'Cash (simulated)' : 'P-wallet (simulated)'),
+                          buildRow('Paid with', r['payment'] == 'cash' ? 'Cash ' : 'P-wallet '),
                         ],
                       ),
                     ),

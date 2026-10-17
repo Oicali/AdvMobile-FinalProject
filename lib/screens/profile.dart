@@ -220,7 +220,7 @@ class ProfilePage extends State<ProfileState> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('P-wallet (simulated)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: gray)),
+                    const Text('P-wallet ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: gray)),
                     const SizedBox(height: 1),
                     Text(AppSettings.peso(AllWallets.available(me)), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: ink, letterSpacing: -0.3)),
                   ],

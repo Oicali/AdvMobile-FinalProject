@@ -51,7 +51,11 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
         initial: isReply ? (d['reply'] as String) : '',
       ),
     );
-    if (text == null || text.isEmpty || !mounted) return;
+    if (text == null || !mounted) return;
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Write something before saving.')));
+      return;
+    }
     setState(() {
       if (isReply) {
         d['reply'] = text;
@@ -372,7 +376,7 @@ class DisputeDetailsPage extends State<DisputeDetailsState> {
                       child: Column(
                         children: [
                           buildStep('Submitted', filedOn.isEmpty ? '' : AppSettings.shortDate(filedOn), true, false),
-                          buildStep('Admin review (simulated)', status == 'Submitted' ? 'Pending' : (resolved ? 'Done' : 'Now'), status != 'Submitted', false),
+                          buildStep('Admin review ', status == 'Submitted' ? 'Pending' : (resolved ? 'Done' : 'Now'), status != 'Submitted', false),
                           buildStep('Resolved', resolved ? '${d['outcome']}' : 'Pending', resolved, true),
                         ],
                       ),

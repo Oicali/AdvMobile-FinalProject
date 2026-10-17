@@ -98,7 +98,7 @@ class MyListingsPage extends State<MyListingsState> {
 
   Future<void> closeNotReturned(Map<String, dynamic> r) async {
     final amount = AppSettings.peso(RentalFees.deposit(r));
-    final where = r['payment'] == 'cash' ? 'stays with you (simulated)' : 'is paid to your P-wallet (simulated)';
+    final where = r['payment'] == 'cash' ? 'stays with you ' : 'is paid to your P-wallet ';
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

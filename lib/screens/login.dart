@@ -1,28 +1,31 @@
+// ===== FILE 3: lib/screens/login.dart =====
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/activeuser.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/applogo.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
-
+ 
 // Widget class (XState naming convention)
 class LoginState extends StatefulWidget {
   const LoginState({super.key});
-
+ 
   @override
   State<LoginState> createState() => LoginPage();
 }
-
+ 
 // State class (XPage naming convention)
 class LoginPage extends State<LoginState> {
-  final TextEditingController usernameCtrl = TextEditingController(text: 'juan');
-  final TextEditingController passwordCtrl = TextEditingController(text: 'password123');
-  bool showError = false;
-
+  // CHANGED: fields start empty (no prefilled juan / password123)
+  final TextEditingController usernameCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
+  // CHANGED: one message string replaces the old showError flag, so empty and wrong login can say different things
+  String? errorMsg;
+ 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color mint = Color(0xFF74C5A8); // header green from the Pahiram mockup (estimated)
   static const Color ink = Color(0xFF1B2626);
   static const Color gray = Color(0xFF6A7776);
-
+ 
   // Free the controllers when the screen is removed
   @override
   void dispose() {
@@ -30,21 +33,28 @@ class LoginPage extends State<LoginState> {
     passwordCtrl.dispose();
     super.dispose();
   }
-
+ 
   // Check credentials against AllUsers, then route by account type
   void login() {
     final u = usernameCtrl.text.trim().toLowerCase();
     final p = passwordCtrl.text;
+ 
+    // NEW: empty fields get their own message
+    if (u.isEmpty || p.isEmpty) {
+      setState(() => errorMsg = 'Enter your username and password.');
+      return;
+    }
+ 
     final ok = AllUsers.users.any((x) => x['username'] == u && x['password'] == p);
-
+ 
     if (!ok) {
-      setState(() => showError = true);
+      setState(() => errorMsg = 'Wrong username or password. Check both and try again.');
       return;
     }
     ActiveUser.username = u;
     Navigator.pushReplacementNamed(context, u == 'admin' ? '/demomenu' : '/home');
   }
-
+ 
   // Soft translucent circle used as header decoration
   Widget buildCircle(double size) {
     return Container(
@@ -53,7 +63,7 @@ class LoginPage extends State<LoginState> {
       decoration: const BoxDecoration(color: Color(0x26FFFFFF), shape: BoxShape.circle),
     );
   }
-
+ 
   // Small translucent pill with an icon, shown under the tagline
   Widget buildPill(IconData icon, String label) {
     return Container(
@@ -69,7 +79,7 @@ class LoginPage extends State<LoginState> {
       ),
     );
   }
-
+ 
   // Mint header: decorative circles, logo on a white card, tagline and feature pills
   Widget buildHeader() {
     return Container(
@@ -119,7 +129,7 @@ class LoginPage extends State<LoginState> {
       ),
     );
   }
-
+ 
     @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,20 +162,20 @@ class LoginPage extends State<LoginState> {
                         const Text('Log in to borrow or lend.',
                             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: gray)),
                         const SizedBox(height: 22),
-
+ 
                         // Username field (login uses username, not email)
                         InputField(
                           label: 'Username',
                           controller: usernameCtrl,
                           hint: 'juan',
                           icon: Icons.person_outline,
-                          hasError: showError,
+                          hasError: errorMsg != null,
                           onChanged: (_) {
-                            if (showError) setState(() => showError = false);
+                            if (errorMsg != null) setState(() => errorMsg = null);
                           },
                         ),
                         const SizedBox(height: 16),
-
+ 
                         // Password field + error message after a failed login
                         InputField(
                           label: 'Password',
@@ -173,13 +183,13 @@ class LoginPage extends State<LoginState> {
                           hint: 'Enter your password',
                           icon: Icons.lock_outline,
                           obscure: true,
-                          errorText: showError ? 'Wrong username or password. Check both and try again.' : null,
+                          errorText: errorMsg,
                           onChanged: (_) {
-                            if (showError) setState(() => showError = false);
+                            if (errorMsg != null) setState(() => errorMsg = null);
                           },
                         ),
                         const SizedBox(height: 24),
-
+ 
                         // Filled pill with a soft teal glow: log in
                         Container(
                           height: 52,
@@ -200,7 +210,7 @@ class LoginPage extends State<LoginState> {
                           ),
                         ),
                         const SizedBox(height: 16),
-
+ 
                         // Divider with "or"
                         Row(
                           children: const [
@@ -213,7 +223,7 @@ class LoginPage extends State<LoginState> {
                           ],
                         ),
                         const SizedBox(height: 16),
-
+ 
                         // Outlined pill: go to Register
                         SizedBox(
                           height: 52,
@@ -232,8 +242,8 @@ class LoginPage extends State<LoginState> {
                     ),
                   ),
                   const SizedBox(height: 18),
-
-                  // Demo label: everything in the app is simulated (SIMULATED)
+ 
+                  // Demo label: everything in the app is simulated 
                   const Text('Front-end demo. Accounts, payments and ID checks are simulated.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),

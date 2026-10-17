@@ -46,8 +46,8 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
     r['lenderConfirmed'] = true;
     r['status'] = 'Completed';
     final msg = !AllWallets.isWallet(r)
-        ? 'Return confirmed. Hand back the deposit in person (simulated).'
-        : (AllWallets.isSettled(r) ? 'Return confirmed. P-wallet payout released (simulated).' : 'Return confirmed. Payout waits for the open dispute (simulated).');
+        ? 'Return confirmed. Hand back the deposit in person .'
+        : (AllWallets.isSettled(r) ? 'Return confirmed. P-wallet payout released .' : 'Return confirmed. Payout waits for the open dispute .');
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     await Navigator.pushNamed(context, '/ratereview', arguments: r['id']);
     if (!mounted) return;
@@ -249,7 +249,7 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                             decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
-                            child: buildRow(r['payment'] == 'cash' ? 'Deposit to return in person (simulated)' : 'Deposit refund to P-wallet (simulated)', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
+                            child: buildRow(r['payment'] == 'cash' ? 'Deposit to return in person ' : 'Deposit refund to P-wallet ', AppSettings.peso(RentalFees.depositRefund(r)), bold: true, color: teal),
                           ),
                         ],
                       ),
@@ -258,8 +258,8 @@ class ConfirmReturnPage extends State<ConfirmReturnState> {
                     if (canConfirm) ...[
                       Text(
                         r['payment'] == 'cash'
-                            ? 'Confirming records that the deposit was returned in person (simulated). If something is damaged, report it before you confirm.'
-                            : 'Confirming releases the P-wallet payout (simulated). If something is damaged, report it before you confirm.',
+                            ? 'Confirming records that the deposit was returned in person . If something is damaged, report it before you confirm.'
+                            : 'Confirming releases the P-wallet payout . If something is damaged, report it before you confirm.',
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: gray, height: 1.4),
                       ),
                     ],

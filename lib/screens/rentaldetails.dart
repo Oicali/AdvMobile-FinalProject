@@ -115,7 +115,7 @@ class RentalDetailsPage extends State<RentalDetailsState> {
     return steps;
   }
 
-  String paymentLabel(Map<String, dynamic> r) => r['payment'] == 'cash' ? 'Cash (simulated)' : 'P-wallet (simulated)';
+  String paymentLabel(Map<String, dynamic> r) => r['payment'] == 'cash' ? 'Cash ' : 'P-wallet ';
 
   String pickupAddress(Map<String, dynamic> r) {
     final list = AllAddresses.ownedBy(r['lender']);

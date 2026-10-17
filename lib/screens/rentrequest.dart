@@ -504,8 +504,8 @@ class RentRequestPage extends State<RentRequestState> {
                   const SizedBox(height: 18),
  
                   buildSectionTitle('Payment method'),
-                  buildPaymentCard('wallet', Icons.account_balance_wallet_outlined, 'P-wallet (simulated)', 'Your balance ${AppSettings.peso(AllWallets.available(ActiveUser.username))}'),
-                  buildPaymentCard('cash', Icons.money, 'Cash (simulated)', 'Pay the lender in person'),
+                  buildPaymentCard('wallet', Icons.account_balance_wallet_outlined, 'P-wallet ', 'Your balance ${AppSettings.peso(AllWallets.available(ActiveUser.username))}'),
+                  buildPaymentCard('cash', Icons.money, 'Cash ', 'Pay the lender in person'),
                   const SizedBox(height: 8),
  
                   buildSectionTitle('Cost summary'),

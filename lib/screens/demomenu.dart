@@ -25,6 +25,28 @@ class DemoMenuPage extends State<DemoMenuState> {
   
   static const List<String> clockStatuses = ['Approved', 'Active', 'Overdue', 'Returned'];
 
+  static bool showClock = false;
+
+  final Set<String> openDisputes = {};
+
+  Widget buildComment(String who, String text, String emptyText) {
+    final empty = text.trim().isEmpty;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: tealSoft, borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(who, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: gray)),
+          const SizedBox(height: 3),
+          Text(empty ? emptyText : text,
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: empty ? gray : ink, height: 1.4)),
+        ],
+      ),
+    );
+  }
+
  
   void advance(int days) {
     setState(() {
@@ -157,7 +179,15 @@ class DemoMenuPage extends State<DemoMenuState> {
     final resolved = status == 'Resolved';
     final byBorrower = r != null && r['borrower'] == d['filedBy'];
     final outcomes = r == null ? ['Refund borrower', 'Pay lender', 'Split'] : (byBorrower ? ['Refund borrower', 'Split'] : ['Pay lender', 'Split']);
-    return Container(
+    final key = '${d['id']}';
+    final open = openDisputes.contains(key);
+    final message = (d['message'] ?? '') as String;
+    final reply = (d['reply'] ?? '') as String;
+    final other = r == null ? 'other party' : (byBorrower ? r['lender'] : r['borrower']);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => open ? openDisputes.remove(key) : openDisputes.add(key)),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: cardStyle(16),
@@ -188,17 +218,32 @@ class DemoMenuPage extends State<DemoMenuState> {
           ),
           buildInfoRow(Icons.payments_outlined, 'Amount in question', AppSettings.peso(amount)),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              buildStageButton('Under review', status == 'Under review', () => setStage(d, 'Under review', '')),
-              for (final o in outcomes) buildStageButton(o, resolved && outcome == o, () => setStage(d, 'Resolved', o)),
-              buildStageButton('Reset', false, () => setStage(d, 'Submitted', '')),
-            ],
-          ),
+          if (!open)
+            const Row(
+              children: [
+                Icon(Icons.expand_more, size: 18, color: gray),
+                SizedBox(width: 6),
+                Text('Tap to read the report before ruling', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: gray)),
+              ],
+            )
+          else ...[
+            buildComment('Report from ${d['filedBy']}', message, 'No message.'),
+            const SizedBox(height: 10),
+            buildComment('Reply from $other', reply, 'No reply yet.'),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                buildStageButton('Under review', status == 'Under review', () => setStage(d, 'Under review', '')),
+                for (final o in outcomes) buildStageButton(o, resolved && outcome == o, () => setStage(d, 'Resolved', o)),
+                buildStageButton('Reset', false, () => setStage(d, 'Submitted', '')),
+              ],
+            ),
+          ],
         ],
       ),
+    ),
     );
   }
 
@@ -221,6 +266,7 @@ class DemoMenuPage extends State<DemoMenuState> {
                 children: [
 
 
+                  if (showClock) ...[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: cardStyle(20),
@@ -278,6 +324,7 @@ class DemoMenuPage extends State<DemoMenuState> {
                   else
                     ...live.map(buildRental),
                   const SizedBox(height: 18),
+                  ],
                   Padding(
                     padding: const EdgeInsets.only(left: 2, right: 2, bottom: 12),
                     child: Row(

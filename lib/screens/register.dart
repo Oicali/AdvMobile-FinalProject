@@ -1,16 +1,17 @@
+// ===== FILE 1: lib/screens/register.dart =====
 import 'package:flutter/material.dart';
 import 'package:advmobile_finalproject/glob/allusers.dart';
 import 'package:advmobile_finalproject/widgets/inputfield.dart';
 import 'package:advmobile_finalproject/widgets/topbar.dart';
-
+ 
 // Widget class (XState naming convention)
 class RegisterState extends StatefulWidget {
   const RegisterState({super.key});
-
+ 
   @override
   State<RegisterState> createState() => RegisterPage();
 }
-
+ 
 // State class (XPage naming convention)
 class RegisterPage extends State<RegisterState> {
   final TextEditingController fullnameCtrl = TextEditingController();
@@ -19,17 +20,17 @@ class RegisterPage extends State<RegisterState> {
   final TextEditingController emailCtrl = TextEditingController();
   final TextEditingController passwordCtrl = TextEditingController();
   final TextEditingController confirmCtrl = TextEditingController();
-
+ 
   // Field key -> error message (a key present means that field is invalid)
   final Map<String, String> errors = {};
-
+ 
   static const Color teal = Color(0xFF0F5C5C);
   static const Color ink = Color(0xFF1B2626);
   static const Color error = Color(0xFFD64545);
   static const Color gray = Color(0xFF6A7776);
   static const Color tealSoft = Color(0xFFE3F0EE);
   static const Color barOff = Color(0xFFD5E3E0);
-
+ 
   // Free all controllers when the screen is removed
   @override
   void dispose() {
@@ -41,44 +42,81 @@ class RegisterPage extends State<RegisterState> {
     confirmCtrl.dispose();
     super.dispose();
   }
-
+ 
+  // NEW: last 10 digits of a phone number, so 0917... and +63917... count as the same number
+  String last10(String p) {
+    final d = p.replaceAll(RegExp(r'\D'), '');
+    return d.length >= 10 ? d.substring(d.length - 10) : d;
+  }
+ 
   // Validate, save the user, sign them in, then continue to the skippable address step
   void createAccount() {
     final fullname = fullnameCtrl.text.trim();
     final username = usernameCtrl.text.trim().toLowerCase();
     final phone = phoneCtrl.text.trim();
+    final phoneClean = phone.replaceAll(RegExp(r'[\s\-]'), '');
     final email = emailCtrl.text.trim();
     final password = passwordCtrl.text;
     final confirm = confirmCtrl.text;
     final taken = AllUsers.users.any((u) => u['username'] == username);
-
+    // NEW: email and phone must not belong to another account
+    final emailTaken = AllUsers.users.any((u) => (u['email'] as String).toLowerCase() == email.toLowerCase());
+    final phoneTaken = AllUsers.users.any((u) => (u['phone'] as String).isNotEmpty && last10(u['phone']) == last10(phoneClean));
+ 
     setState(() {
       errors.clear();
-      if (fullname.isEmpty) errors['fullname'] = 'Enter your full name.';
-      if (username.isEmpty || username.contains(' ')) {
-        errors['username'] = 'Enter a username with no spaces.';
+ 
+      // CHANGED: name needs at least 3 characters
+      if (fullname.isEmpty) {
+        errors['fullname'] = 'Enter your full name.';
+      } else if (fullname.length < 3) {
+        errors['fullname'] = 'Full name must be at least 3 characters.';
+      } else if (fullname.length > 40) {
+        errors['fullname'] = 'Full name can be at most 40 characters.';
+      }
+ 
+      // CHANGED: username 4 to 20 characters, letters, numbers and underscore only
+      if (username.isEmpty) {
+        errors['username'] = 'Enter a username.';
+      } else if (!RegExp(r'^[a-z0-9_]{4,20}$').hasMatch(username)) {
+        errors['username'] = '4 to 20 characters: letters, numbers or underscore only.';
       } else if (taken) {
         errors['username'] = 'That username is taken. Try another.';
       }
-      if (phone.replaceAll(RegExp(r'\D'), '').length < 10) errors['phone'] = 'Enter a valid mobile number.';
-      if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(email)) errors['email'] = 'Enter a valid email.';
+ 
+      // CHANGED: Philippine mobile number format and unique
+      if (phoneClean.isEmpty) {
+        errors['phone'] = 'Enter your mobile number.';
+      } else if (!RegExp(r'^(09|\+639|639)\d{9}$').hasMatch(phoneClean)) {
+        errors['phone'] = 'Use a PH mobile number like 0917 123 4567.';
+      } else if (phoneTaken) {
+        errors['phone'] = 'That mobile number is already registered.';
+      }
+ 
+      // CHANGED: email format and unique
+      if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(email)) {
+        errors['email'] = 'Enter a valid email.';
+      } else if (emailTaken) {
+        errors['email'] = 'That email is already registered.';
+      }
+ 
       if (password.length < 8 || !RegExp(r'\d').hasMatch(password)) errors['password'] = 'At least 8 characters with a number.';
       if (confirm != password) errors['confirm'] = 'Passwords do not match.';
     });
     if (errors.isNotEmpty) return;
-
+ 
     // Account is NOT created yet; the address step creates it on Save or Skip
     Navigator.pushNamed(context, '/addeditaddress', arguments: {
       'onboarding': true,
-      'newUser': {'fullname': fullname, 'username': username, 'password': password, 'email': email, 'phone': phone},
+      'newUser': {'fullname': fullname, 'username': username, 'password': password, 'email': email, 'phone': phoneClean},
     });
   }
-
+ 
   // Clears one field's error as soon as the user edits it
   void clearError(String key) {
     if (errors.containsKey(key)) setState(() => errors.remove(key));
   }
-
+ 
   Widget buildStep() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +133,7 @@ class RegisterPage extends State<RegisterState> {
       ],
     );
   }
-
+ 
   Widget buildSection(IconData icon, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -149,7 +187,7 @@ class RegisterPage extends State<RegisterState> {
                           children: [
                             buildStep(),
                             const SizedBox(height: 18),
-
+ 
                             // Card 1: personal details
                             buildCard([
                               buildSection(Icons.person_outline, 'About you'),
@@ -162,7 +200,7 @@ class RegisterPage extends State<RegisterState> {
                               InputField(label: 'Email', controller: emailCtrl, hint: 'juan@email.com', icon: Icons.mail_outline, keyboard: TextInputType.emailAddress, errorText: errors['email'], onChanged: (_) => clearError('email')),
                             ]),
                             const SizedBox(height: 16),
-
+ 
                             // Card 2: password
                             buildCard([
                               buildSection(Icons.lock_outline, 'Secure your account'),
@@ -170,15 +208,15 @@ class RegisterPage extends State<RegisterState> {
                               const SizedBox(height: 14),
                               InputField(label: 'Confirm password', controller: confirmCtrl, hint: 'Re-enter your password', icon: Icons.verified_user_outlined, obscure: true, errorText: errors['confirm'], onChanged: (_) => clearError('confirm')),
                             ]),
-
+ 
                             const Spacer(),
                             const SizedBox(height: 20),
-                            // Demo label (SIMULATED)
+                            // Demo label 
                             const Text('Next, you can add an address or skip it. Account setup is simulated in this demo.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: gray, height: 1.4)),
                             const SizedBox(height: 14),
-
+ 
                             // Filled pill with a soft teal glow: create the account and move to the address step
                             Container(
                               height: 52,
@@ -199,7 +237,7 @@ class RegisterPage extends State<RegisterState> {
                               ),
                             ),
                             const SizedBox(height: 12),
-
+ 
                             // Outlined pill: back to Login (replace so screens don't stack)
                             SizedBox(
                               height: 52,
